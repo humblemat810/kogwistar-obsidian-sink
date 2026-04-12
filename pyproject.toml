@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kogwistar-obsidian-sink"
+version = "0.1.0"
+description = "Composable Obsidian vault sink for Kogwistar projections"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "OpenAI for user"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+kogwistar-obsidian-sink = "kogwistar_obsidian_sink.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["kogwistar_obsidian_sink*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,58 @@
+{
+  "version": 42,
+  "event_seq": 98122,
+  "entities": [
+    {
+      "id": "node:concept:hypergraph-rag",
+      "label": "Hypergraph RAG",
+      "type": "concept",
+      "summary": "Graph-native retrieval that keeps relations first-class instead of flattening everything into isolated chunks.",
+      "metadata": {
+        "tags": ["concept", "retrieval"],
+        "aliases": ["Hypergraph Retrieval"],
+        "body": "This note was projected from a Kogwistar-style export. It demonstrates stable identities, provenance, and file-based browsing in Obsidian."
+      },
+      "source_ids": ["node:document:karpathy-llm-kb"],
+      "target_ids": ["node:project:obsidian-sink"],
+      "relation": "supports",
+      "mentions": [
+        {
+          "spans": [
+            {
+              "doc_id": "doc:paper:42",
+              "page_number": 3,
+              "start_char": 12,
+              "end_char": 68,
+              "excerpt": "compile a wiki of linked markdown files with local assets",
+              "document_page_url": "document/doc:paper:42#p3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "node:document:karpathy-llm-kb",
+      "label": "LLM Knowledge Bases",
+      "type": "document",
+      "summary": "A document about compiling a markdown wiki instead of relying only on naive retrieval.",
+      "metadata": {
+        "tags": ["document", "knowledge-base"],
+        "body": "Projected as a document note. In a fuller integration this could carry richer provenance and attachment references."
+      },
+      "source_ids": [],
+      "target_ids": ["node:concept:hypergraph-rag"]
+    },
+    {
+      "id": "node:project:obsidian-sink",
+      "label": "Obsidian Sink",
+      "type": "project",
+      "summary": "A durable, rebuildable projection from Kogwistar into an Obsidian vault.",
+      "metadata": {
+        "tags": ["project", "projection"],
+        "body": "This project note represents the adapter itself."
+      },
+      "source_ids": ["node:concept:hypergraph-rag"],
+      "target_ids": []
+    }
+  ]
+}

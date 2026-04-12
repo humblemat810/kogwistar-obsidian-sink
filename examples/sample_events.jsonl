@@ -1,0 +1,2 @@
+{"type": "entity.upsert", "event_seq": 1001, "version": 8, "entity": {"id": "node:concept:event-sourcing", "label": "Event Sourcing", "type": "concept", "summary": "History-first update model.", "metadata": {"tags": ["concept"]}, "source_ids": [], "target_ids": ["node:project:obsidian-sink"]}}
+{"type": "entity.upsert", "event_seq": 1002, "version": 8, "entity": {"id": "node:project:obsidian-sink", "label": "Obsidian Sink", "type": "project", "summary": "Projection adapter.", "metadata": {"tags": ["project"]}, "source_ids": ["node:concept:event-sourcing"], "target_ids": []}}

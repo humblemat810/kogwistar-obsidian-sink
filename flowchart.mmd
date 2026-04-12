@@ -1,0 +1,31 @@
+flowchart TD
+  subgraph "kogwistar-obsidian-sink repo"
+    direction TB
+
+    CLI["CLI entrypoints"]
+    ADAPT["KogwistarDuckProvider"]
+    DEMO["In-memory demo builder"]
+    EVT["JsonlEventConsumer"]
+    BUILD["ObsidianVaultSink.build()"]
+    SYNC["ObsidianVaultSink.sync()"]
+    RENDER["Render Markdown / Canvas / Index"]
+    STATE["Vault-local state"]
+    VAULT["Obsidian vault on disk"]
+  end
+
+  EX1["Static Kogwistar export"] --> CLI
+  EX2["In-memory Kogwistar engine"] --> DEMO
+  EX3["JSONL change events"] --> EVT
+
+  CLI --> ADAPT --> BUILD
+  DEMO --> ADAPT --> BUILD
+  EV1["Loaded event inbox + materialized state"] --> EVT --> SYNC
+
+  BUILD --> RENDER
+  SYNC --> RENDER
+  RENDER --> VAULT
+
+  BUILD --> STATE
+  SYNC --> STATE
+
+  VAULT --> OBS["Obsidian reads notes, links, graph, backlinks"]

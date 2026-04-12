@@ -1,0 +1,259 @@
+{
+  "version": 128,
+  "event_seq": 204800,
+  "entities": [
+    {
+      "id": "node:concept:hypergraph-rag",
+      "label": "Hypergraph RAG",
+      "type": "concept",
+      "summary": "Graph-native retrieval keeps relationships visible instead of flattening everything into isolated chunks.",
+      "metadata": {
+        "tags": ["concept", "retrieval", "graph"],
+        "aliases": ["Hypergraph Retrieval", "Graph-first RAG"],
+        "body": "This note ties together the demo vault, the compatibility contract, and the rebuild pipeline. It should read like a realistic project note, not a toy example.",
+        "heading_refs": [
+          {
+            "target_id": "node:document:llm-knowledge-bases",
+            "heading": "Why this matters"
+          }
+        ],
+        "block_refs": [
+          {
+            "target_id": "node:project:obsidian-sink",
+            "block_id": "projection-path"
+          }
+        ]
+      },
+      "source_ids": ["node:document:llm-knowledge-bases"],
+      "target_ids": ["node:project:obsidian-sink"],
+      "relation": "supports",
+      "relationships": [
+        {
+          "source_id": "node:concept:hypergraph-rag",
+          "target_id": "node:project:obsidian-sink",
+          "relation_type": "depends_on",
+          "properties": {
+            "phase": "projection",
+            "confidence": 0.93
+          }
+        },
+        {
+          "source_id": "node:concept:hypergraph-rag",
+          "target_id": "node:concept:naive-chunking",
+          "relation_type": "contradicts",
+          "properties": {
+            "claim": "relations-first retrieval is preferable for navigable knowledge work"
+          }
+        }
+      ],
+      "mentions": [
+        {
+          "spans": [
+            {
+              "doc_id": "doc:paper:42",
+              "page_number": 3,
+              "start_char": 12,
+              "end_char": 68,
+              "excerpt": "compile a wiki of linked markdown files with local assets",
+              "document_page_url": "document/doc:paper:42#p3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "node:document:llm-knowledge-bases",
+      "label": "LLM Knowledge Bases",
+      "type": "document",
+      "summary": "A practical note about compiling a markdown wiki, maintaining provenance, and keeping local assets readable in Obsidian.",
+      "metadata": {
+        "tags": ["document", "knowledge-base"],
+        "aliases": ["LLM KBs"],
+        "attachments": [
+          "Assets/llm-knowledge-bases.pdf",
+          "Assets/diagrams/knowledge-flow.png"
+        ],
+        "body": "This note can host source excerpts, local attachments, and concise project guidance. It connects research-style notes to a working vault."
+      },
+      "source_ids": ["node:person:andrej-karpathy"],
+      "target_ids": ["node:concept:hypergraph-rag"],
+      "relation": "informs",
+      "relationships": [
+        {
+          "source_id": "node:document:llm-knowledge-bases",
+          "target_id": "node:project:obsidian-sink",
+          "relation_type": "references",
+          "properties": {
+            "kind": "implementation-note"
+          }
+        }
+      ]
+    },
+    {
+      "id": "node:project:obsidian-sink",
+      "label": "Obsidian Sink",
+      "type": "project",
+      "summary": "A durable, rebuildable projection pipeline from Kogwistar into an Obsidian vault.",
+      "metadata": {
+        "tags": ["project", "projection", "obsidian"],
+        "aliases": ["Vault Sink", "Projection Adapter"],
+        "heading_refs": [
+          {
+            "target_id": "node:governance:obsidian-compatibility-contract",
+            "heading": "Compatibility Contract"
+          }
+        ],
+        "block_refs": [
+          {
+            "target_id": "node:workflow:projection-build",
+            "block_id": "rebuild-loop"
+          }
+        ],
+        "body": "The project note explains how the vault remains a read model while still being useful as a day-to-day workspace."
+      },
+      "source_ids": ["node:concept:hypergraph-rag"],
+      "target_ids": ["node:workflow:projection-build"],
+      "relation": "implements",
+      "relationships": [
+        {
+          "source_id": "node:project:obsidian-sink",
+          "target_id": "node:governance:obsidian-compatibility-contract",
+          "relation_type": "depends_on",
+          "properties": {
+            "reason": "rules for link and file generation"
+          }
+        }
+      ]
+    },
+    {
+      "id": "node:person:andrej-karpathy",
+      "label": "Andrej Karpathy",
+      "type": "person",
+      "summary": "Referenced here as the person associated with the LLM knowledge-base example.",
+      "metadata": {
+        "tags": ["person", "reference"],
+        "aliases": ["Karpathy"],
+        "body": "A person note can ground the documents that inspired the vault content."
+      },
+      "target_ids": ["node:document:llm-knowledge-bases"],
+      "relation": "inspires"
+    },
+    {
+      "id": "node:concept:naive-chunking",
+      "label": "Naive Chunking",
+      "type": "concept",
+      "summary": "A contrast concept that represents the less expressive alternative to graph-first browsing.",
+      "metadata": {
+        "tags": ["concept", "retrieval"],
+        "aliases": ["Chunk-Only Retrieval"],
+        "body": "This note exists so the demo can show a real contradiction edge rather than a generic placeholder."
+      },
+      "source_ids": [],
+      "target_ids": ["node:concept:hypergraph-rag"],
+      "relation": "challenged_by",
+      "relationships": [
+        {
+          "source_id": "node:concept:naive-chunking",
+          "target_id": "node:document:llm-knowledge-bases",
+          "relation_type": "contradicts",
+          "properties": {
+            "note": "isolated chunks hide the trail"
+          }
+        }
+      ]
+    },
+    {
+      "id": "node:workflow:projection-build",
+      "label": "Projection Build",
+      "type": "workflow",
+      "summary": "The repeatable pipeline that converts graph exports into a browseable vault.",
+      "metadata": {
+        "tags": ["workflow", "build"],
+        "aliases": ["Export Pipeline"],
+        "body": "The workflow demonstrates that the sink can be rebuilt from an export slice or from a complete event stream."
+      },
+      "source_ids": [
+        "node:project:obsidian-sink",
+        "node:governance:obsidian-compatibility-contract"
+      ],
+      "target_ids": ["node:run:projection-rebuild-2026-04-12"],
+      "relation": "orchestrates",
+      "relationships": [
+        {
+          "source_id": "node:workflow:projection-build",
+          "target_id": "node:run:projection-rebuild-2026-04-12",
+          "relation_type": "produces",
+          "properties": {
+            "artifact": "vault"
+          }
+        }
+      ]
+    },
+    {
+      "id": "node:run:projection-rebuild-2026-04-12",
+      "label": "Projection Rebuild 2026-04-12",
+      "type": "run",
+      "summary": "A concrete rebuild run that captures progress and sequence boundaries.",
+      "metadata": {
+        "tags": ["run", "smoke-test"],
+        "aliases": ["Rebuild Checkpoint"],
+        "body": "This run note shows what progress looks like: a bounded export slice, a generated vault, and deterministic filenames."
+      },
+      "source_ids": ["node:workflow:projection-build"],
+      "target_ids": ["node:project:obsidian-sink"],
+      "relation": "executes"
+    },
+    {
+      "id": "node:governance:obsidian-compatibility-contract",
+      "label": "Obsidian Compatibility Contract",
+      "type": "governance",
+      "summary": "The rules that keep the sink readable in plain Obsidian while preserving graph connectivity.",
+      "metadata": {
+        "tags": ["governance", "contract"],
+        "aliases": ["Compatibility Contract"],
+        "body": "This note documents the projection rules so future contributors do not accidentally weaken Graph View behavior."
+      },
+      "source_ids": ["node:project:obsidian-sink"],
+      "target_ids": ["node:workflow:projection-build"],
+      "relation": "constrains",
+      "relationships": [
+        {
+          "source_id": "node:governance:obsidian-compatibility-contract",
+          "target_id": "node:concept:hypergraph-rag",
+          "relation_type": "depends_on",
+          "properties": {
+            "reason": "contract keeps demo output Obsidian-safe"
+          }
+        }
+      ]
+    },
+    {
+      "id": "node:document:progress-log",
+      "label": "Progress Log",
+      "type": "document",
+      "summary": "A human-oriented progress note that summarizes the latest rebuild and the files generated.",
+      "metadata": {
+        "tags": ["document", "status"],
+        "aliases": ["Status Log"],
+        "body": "This progress note is intentionally duplicated by a run note to demonstrate path-qualified wikilinks when titles collide."
+      },
+      "source_ids": ["node:project:obsidian-sink"],
+      "target_ids": ["node:run:projection-rebuild-2026-04-12"],
+      "relation": "records"
+    },
+    {
+      "id": "node:run:progress-log",
+      "label": "Progress Log",
+      "type": "run",
+      "summary": "A run-oriented progress note that records the sequence window used to generate the demo vault.",
+      "metadata": {
+        "tags": ["run", "status"],
+        "aliases": ["Progress Check"],
+        "body": "This note shares a title with the document version so Obsidian links must remain path-qualified when necessary."
+      },
+      "source_ids": ["node:workflow:projection-build"],
+      "target_ids": ["node:project:obsidian-sink"],
+      "relation": "summarizes"
+    }
+  ]
+}

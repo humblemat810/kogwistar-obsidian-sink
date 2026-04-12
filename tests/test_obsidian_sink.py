@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from kogwistar_obsidian_sink.core.links import extract_internal_link_targets
 from kogwistar_obsidian_sink.core.models import ProjectionEntity, SemanticRelationship
@@ -52,169 +53,193 @@ No links here.
     assert extract_internal_link_targets(text) == []
 
 
-def test_build_writes_notes_and_ledger(tmp_path: Path):
-    provider = KogwistarDuckProvider.from_export_file(Path(__file__).parent.parent / "examples" / "sample_graph_export.json")
-    sink = ObsidianVaultSink(tmp_path)
-    stats = sink.build(provider)
+def test_build_writes_notes_and_ledger():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        provider = KogwistarDuckProvider.from_export_file(repo_root / "examples" / "sample_graph_export.json")
+        sink = ObsidianVaultSink(vault_root)
+        stats = sink.build(provider)
 
-    assert stats["notes"] == 3
-    assert stats["canvases"] == 3
-    assert (tmp_path / "Concepts" / "Hypergraph RAG.md").exists()
-    assert (tmp_path / "System" / "ledger.json").exists()
-    assert (tmp_path / "System" / "index.md").exists()
-    assert (tmp_path / "Views" / "Hypergraph RAG.canvas").exists()
+        assert stats["notes"] == 3
+        assert stats["canvases"] == 3
+        assert (vault_root / "Concepts" / "Hypergraph RAG.md").exists()
+        assert (vault_root / "System" / "ledger.json").exists()
+        assert (vault_root / "System" / "index.md").exists()
+        assert (vault_root / "Views" / "Hypergraph RAG.canvas").exists()
 
-    ledger = json.loads((tmp_path / "System" / "ledger.json").read_text(encoding="utf-8"))
-    assert ledger["by_id"]["node:concept:hypergraph-rag"] == "Concepts/Hypergraph RAG.md"
+        ledger = json.loads((vault_root / "System" / "ledger.json").read_text(encoding="utf-8"))
+        assert ledger["by_id"]["node:concept:hypergraph-rag"] == "Concepts/Hypergraph RAG.md"
 
-    canvas = json.loads((tmp_path / "Views" / "Hypergraph RAG.canvas").read_text(encoding="utf-8"))
-    assert canvas["nodes"][0]["text"] == "Hypergraph RAG"
-    assert len(canvas["edges"]) == 2
-    assert {node["text"] for node in canvas["nodes"]} == {
-        "Hypergraph RAG",
-        "node:document:karpathy-llm-kb",
-        "node:project:obsidian-sink",
-    }
+        canvas = json.loads((vault_root / "Views" / "Hypergraph RAG.canvas").read_text(encoding="utf-8"))
+        assert canvas["nodes"][0]["text"] == "Hypergraph RAG"
+        assert len(canvas["edges"]) == 2
+        assert {node["text"] for node in canvas["nodes"]} == {
+            "Hypergraph RAG",
+            "node:document:karpathy-llm-kb",
+            "node:project:obsidian-sink",
+        }
 
-    note = (tmp_path / "Concepts" / "Hypergraph RAG.md").read_text(encoding="utf-8")
-    assert "[[LLM Knowledge Bases]]" in note
-    assert "[[Obsidian Sink]]" in note
-    assert "aliases: [\"Hypergraph Retrieval\"]" in note
+        note = (vault_root / "Concepts" / "Hypergraph RAG.md").read_text(encoding="utf-8")
+        assert "[[LLM Knowledge Bases]]" in note
+        assert "[[Obsidian Sink]]" in note
+        assert "aliases: [\"Hypergraph Retrieval\"]" in note
 
-    index = (tmp_path / "System" / "index.md").read_text(encoding="utf-8")
-    assert "Hypergraph RAG" in index
-    assert "[[Hypergraph RAG]]" in index
-
-
-def test_build_is_stable_for_existing_id(tmp_path: Path):
-    source = Path(__file__).parent.parent / "examples" / "sample_graph_export.json"
-    provider = KogwistarDuckProvider.from_export_file(source)
-    sink = ObsidianVaultSink(tmp_path)
-    sink.build(provider)
-
-    payload = json.loads(source.read_text(encoding="utf-8"))
-    payload["entities"][0]["label"] = "Hypergraph RAG Renamed"
-    provider2 = KogwistarDuckProvider(payload["entities"], version=payload["version"], event_seq=payload["event_seq"])
-    sink.build(provider2)
-
-    assert (tmp_path / "Concepts" / "Hypergraph RAG.md").exists()
-    assert not (tmp_path / "Concepts" / "Hypergraph RAG Renamed.md").exists()
+        index = (vault_root / "System" / "index.md").read_text(encoding="utf-8")
+        assert "Hypergraph RAG" in index
+        assert "[[Hypergraph RAG]]" in index
 
 
-def test_heading_and_block_refs_and_attachments_are_rendered(tmp_path: Path):
-    source = ProjectionEntity(
-        kg_id="node:note:source",
-        title="Source Note",
-        entity_type="note",
-        metadata={
-            "heading_refs": [{"target_id": "node:note:target", "heading": "Section"}],
-            "block_refs": [{"target_id": "node:note:target", "block_id": "block-1"}],
-            "attachments": ["Assets/report.pdf", {"path": "Assets/diagram.png"}],
-        },
-    )
-    target = ProjectionEntity(kg_id="node:note:target", title="Target Note", entity_type="note")
-    sink = ObsidianVaultSink(tmp_path)
-    sink.build(StubProvider([source, target]))
+def test_build_is_stable_for_existing_id():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        source = repo_root / "examples" / "sample_graph_export.json"
+        provider = KogwistarDuckProvider.from_export_file(source)
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(provider)
 
-    note = (tmp_path / "Notes" / "Source Note.md").read_text(encoding="utf-8")
-    assert "[[Target Note#Section]]" in note
-    assert "[[Target Note#^block-1]]" in note
-    assert "[[Assets/report.pdf]]" in note
-    assert "[[Assets/diagram.png]]" in note
+        payload = json.loads(source.read_text(encoding="utf-8"))
+        payload["entities"][0]["label"] = "Hypergraph RAG Renamed"
+        provider2 = KogwistarDuckProvider(payload["entities"], version=payload["version"], event_seq=payload["event_seq"])
+        sink.build(provider2)
+
+        assert (vault_root / "Concepts" / "Hypergraph RAG.md").exists()
+        assert not (vault_root / "Concepts" / "Hypergraph RAG Renamed.md").exists()
 
 
-def test_semantic_relationship_multiplicity_is_preserved(tmp_path: Path):
-    source = ProjectionEntity(
-        kg_id="node:concept:alpha",
-        title="Alpha",
-        entity_type="concept",
-        relationships=[
-            SemanticRelationship(
-                source_id="node:concept:alpha",
-                target_id="node:concept:beta",
-                relation_type="depends_on",
-                properties={"confidence": 0.9},
-            ),
-            SemanticRelationship(
-                source_id="node:concept:alpha",
-                target_id="node:concept:beta",
-                relation_type="contradicts",
-                properties={"confidence": 0.2, "note": "conflicting claim"},
-            ),
-        ],
-    )
-    target = ProjectionEntity(kg_id="node:concept:beta", title="Beta", entity_type="concept")
-    sink = ObsidianVaultSink(tmp_path)
-    sink.build(StubProvider([source, target]))
+def test_heading_and_block_refs_and_attachments_are_rendered():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        source = ProjectionEntity(
+            kg_id="node:note:source",
+            title="Source Note",
+            entity_type="note",
+            metadata={
+                "heading_refs": [{"target_id": "node:note:target", "heading": "Section"}],
+                "block_refs": [{"target_id": "node:note:target", "block_id": "block-1"}],
+                "attachments": ["Assets/report.pdf", {"path": "Assets/diagram.png"}],
+            },
+        )
+        target = ProjectionEntity(kg_id="node:note:target", title="Target Note", entity_type="note")
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(StubProvider([source, target]))
 
-    note = (tmp_path / "Concepts" / "Alpha.md").read_text(encoding="utf-8")
-    assert "## Semantic Relationships" in note
-    assert "depends_on" in note
-    assert "contradicts" in note
-    assert "confidence" in note
-    assert note.count("[[Alpha]]") >= 2
-    assert note.count("[[Beta]]") >= 2
+        note = (vault_root / "Notes" / "Source Note.md").read_text(encoding="utf-8")
+        assert "[[Target Note#Section]]" in note
+        assert "[[Target Note#^block-1]]" in note
+        assert "[[Assets/report.pdf]]" in note
+        assert "[[Assets/diagram.png]]" in note
 
 
-def test_duplicate_titles_are_disambiguated_safely(tmp_path: Path):
-    first = ProjectionEntity(kg_id="node:concept:dup-a", title="Duplicate Note", entity_type="concept")
-    second = ProjectionEntity(kg_id="node:concept:dup-b", title="Duplicate Note", entity_type="concept")
-    sink = ObsidianVaultSink(tmp_path)
-    sink.build(StubProvider([first, second]))
+def test_semantic_relationship_multiplicity_is_preserved():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        source = ProjectionEntity(
+            kg_id="node:concept:alpha",
+            title="Alpha",
+            entity_type="concept",
+            relationships=[
+                SemanticRelationship(
+                    source_id="node:concept:alpha",
+                    target_id="node:concept:beta",
+                    relation_type="depends_on",
+                    properties={"confidence": 0.9},
+                ),
+                SemanticRelationship(
+                    source_id="node:concept:alpha",
+                    target_id="node:concept:beta",
+                    relation_type="contradicts",
+                    properties={"confidence": 0.2, "note": "conflicting claim"},
+                ),
+            ],
+        )
+        target = ProjectionEntity(kg_id="node:concept:beta", title="Beta", entity_type="concept")
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(StubProvider([source, target]))
 
-    base = tmp_path / "Concepts" / "Duplicate Note.md"
-    suffix = tmp_path / "Concepts" / f"Duplicate Note__{hashlib.sha1(second.kg_id.encode('utf-8')).hexdigest()[:8]}.md"
-
-    assert base.exists()
-    assert suffix.exists()
-
-
-def test_filename_sanitization_is_consistent(tmp_path: Path):
-    entity = ProjectionEntity(
-        kg_id="node:concept:safe-file",
-        title='Bad / Name: *? " < > | .',
-        entity_type="concept",
-    )
-    sink = ObsidianVaultSink(tmp_path)
-    sink.build(StubProvider([entity]))
-
-    safe_name = sink._safe_title(entity.title)
-    assert safe_name == safe_name.strip()
-    assert not any(ch in safe_name for ch in '\\/:*?"<>|')
-    assert not safe_name.endswith(".")
-    assert not safe_name.endswith(" ")
-    assert (tmp_path / "Concepts" / f"{safe_name}.md").exists()
-
-
-def test_dangling_targets_are_allowed_and_logged(tmp_path: Path, caplog):
-    entity = ProjectionEntity(
-        kg_id="node:concept:with-dangling",
-        title="Dangling Source",
-        entity_type="concept",
-        source_ids=["node:concept:missing"],
-    )
-    sink = ObsidianVaultSink(tmp_path)
-    with caplog.at_level(logging.WARNING):
-        stats = sink.build(StubProvider([entity]))
-
-    note = (tmp_path / "Concepts" / "Dangling Source.md").read_text(encoding="utf-8")
-    assert "Dangling Obsidian link" in caplog.text
-    assert "[[Notes/node-concept-missing|node:concept:missing]]" in note
-    assert stats["dangling_links"] == 1
+        note = (vault_root / "Concepts" / "Alpha.md").read_text(encoding="utf-8")
+        assert "## Semantic Relationships" in note
+        assert "depends_on" in note
+        assert "contradicts" in note
+        assert "confidence" in note
+        assert note.count("[[Alpha]]") >= 2
+        assert note.count("[[Beta]]") >= 2
 
 
-def test_safe_roundtrip_parser_reads_user_notes(tmp_path: Path):
-    provider = KogwistarDuckProvider.from_export_file(Path(__file__).parent.parent / "examples" / "sample_graph_export.json")
-    sink = ObsidianVaultSink(tmp_path)
-    sink.build(provider)
-    note = tmp_path / "Concepts" / "Hypergraph RAG.md"
-    text = note.read_text(encoding="utf-8").replace(
-        "<!-- USER-OWNED-START -->\n",
-        "<!-- USER-OWNED-START -->\nMy manual note.\n",
-        1,
-    )
-    note.write_text(text, encoding="utf-8")
+def test_duplicate_titles_are_disambiguated_safely():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        first = ProjectionEntity(kg_id="node:concept:dup-a", title="Duplicate Note", entity_type="concept")
+        second = ProjectionEntity(kg_id="node:concept:dup-b", title="Duplicate Note", entity_type="concept")
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(StubProvider([first, second]))
 
-    parsed = SafeRoundTripParser().parse(note)
-    assert parsed.kg_id == "node:concept:hypergraph-rag"
-    assert parsed.user_notes == "My manual note."
+        base = vault_root / "Concepts" / "Duplicate Note.md"
+        suffix = vault_root / "Concepts" / f"Duplicate Note__{hashlib.sha1(second.kg_id.encode('utf-8')).hexdigest()[:8]}.md"
+
+        assert base.exists()
+        assert suffix.exists()
+
+
+def test_filename_sanitization_is_consistent():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        entity = ProjectionEntity(
+            kg_id="node:concept:safe-file",
+            title='Bad / Name: *? " < > | .',
+            entity_type="concept",
+        )
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(StubProvider([entity]))
+
+        safe_name = sink._safe_title(entity.title)
+        assert safe_name == safe_name.strip()
+        assert not any(ch in safe_name for ch in '\\/:*?"<>|')
+        assert not safe_name.endswith(".")
+        assert not safe_name.endswith(" ")
+        assert (vault_root / "Concepts" / f"{safe_name}.md").exists()
+
+
+def test_dangling_targets_are_allowed_and_logged(caplog):
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        entity = ProjectionEntity(
+            kg_id="node:concept:with-dangling",
+            title="Dangling Source",
+            entity_type="concept",
+            source_ids=["node:concept:missing"],
+        )
+        sink = ObsidianVaultSink(vault_root)
+        with caplog.at_level(logging.WARNING):
+            stats = sink.build(StubProvider([entity]))
+
+        note = (vault_root / "Concepts" / "Dangling Source.md").read_text(encoding="utf-8")
+        assert "Dangling Obsidian link" in caplog.text
+        assert "[[Notes/node-concept-missing|node:concept:missing]]" in note
+        assert stats["dangling_links"] == 1
+
+
+def test_safe_roundtrip_parser_reads_user_notes():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        provider = KogwistarDuckProvider.from_export_file(repo_root / "examples" / "sample_graph_export.json")
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(provider)
+        note = vault_root / "Concepts" / "Hypergraph RAG.md"
+        text = note.read_text(encoding="utf-8").replace(
+            "<!-- USER-OWNED-START -->\n",
+            "<!-- USER-OWNED-START -->\nMy manual note.\n",
+            1,
+        )
+        note.write_text(text, encoding="utf-8")
+
+        parsed = SafeRoundTripParser().parse(note)
+        assert parsed.kg_id == "node:concept:hypergraph-rag"
+        assert parsed.user_notes == "My manual note."

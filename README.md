@@ -18,7 +18,7 @@ That keeps the sink usable as a standalone repo while still fitting Kogwistar's 
 - generated Obsidian `.canvas` neighborhood views
 - a CDC/event-consumer scaffold
 - safe round-trip parsing for explicitly editable sections
-- a working demo using sample Kogwistar-style export data
+- a working demo using a larger Kogwistar-style export
 - tests
 
 ## Repo layout
@@ -63,10 +63,10 @@ python -m venv .venv
 pip install -e .
 ```
 
-### 3. Build the demo vault
+### 3. Run the end-to-end in-memory demo
 
 ```bash
-kogwistar-obsidian-sink build-demo   --sample examples/sample_graph_export.json   --vault ./demo_vault
+kogwistar-obsidian-sink build-in-memory-demo --vault ./demo_vault
 ```
 
 You should get:
@@ -74,9 +74,23 @@ You should get:
 - `Concepts/*.md`
 - `Documents/*.md`
 - `Projects/*.md`
+- `Workflows/*.md`
+- `Governance/*.md`
 - `Views/*.canvas`
 - `System/ledger.json`
 - `System/index.md`
+
+This demo:
+
+- seeds a small in-memory Kogwistar engine
+- performs a full Obsidian vault dump
+- applies one incremental streamed update into the same vault
+
+If you want a static snapshot instead of the in-memory demo, use:
+
+```bash
+kogwistar-obsidian-sink build-from-export --input examples/sample_graph_export.json --vault ./demo_vault
+```
 
 ## Verification
 
@@ -99,7 +113,7 @@ That is enough for this project because Obsidian consumes the generated files di
 
 1. Build the vault:
    ```bash
-   kogwistar-obsidian-sink build-demo --sample examples/sample_graph_export.json --vault ./demo_vault
+   kogwistar-obsidian-sink build-from-export --input examples/sample_graph_export.json --vault ./demo_vault
    ```
 2. Open Obsidian.
 3. Choose **Open folder as vault**.
@@ -138,7 +152,7 @@ Use a Kogwistar-side script or workflow step to produce a JSON export of entity-
 Then run:
 
 ```bash
-kogwistar-obsidian-sink build-from-export   --input path/to/export.json   --vault /path/to/vault
+kogwistar-obsidian-sink build-from-export --input path/to/export.json --vault /path/to/vault
 ```
 
 ### Shape B: in-process adapter
@@ -156,15 +170,53 @@ sink.build(provider)
 
 This works with Kogwistar-like objects that expose fields such as `id`, `label`, `summary`, `metadata`, `mentions`, `source_ids`, `target_ids`, `relation`, or `type`.
 
+### Shape C: in-memory Kogwistar engine
+
+This is the quickest way to show a real KG pipeline without a persistent backend. The sink does not need embeddings directly, so a 1-dim embedder is enough for the demo engine. The packaged demo command below runs this full path for you:
+
+```bash
+kogwistar-obsidian-sink build-in-memory-demo --vault ./demo_vault
+```
+
+```python
+from kogwistar_obsidian_sink.demo.in_memory_obsidian_demo import run_end_to_end_demo
+
+run_end_to_end_demo("./demo_vault")
+```
+
+For the smallest possible end-to-end proof, use the packaged demo command above.
+
+If you want a static export instead, use the existing sample export:
+
+```bash
+kogwistar-obsidian-sink build-from-export --input examples/sample_graph_export.json --vault ./demo_vault
+```
+
 ## CDC scaffold
 
-A minimal event consumer is included for deeper integration:
+A minimal event consumer is included for deeper integration. This is the incremental streaming path and is the preferred default for ongoing updates:
 
 ```bash
 kogwistar-obsidian-sink consume-events   --events examples/sample_events.jsonl   --vault ./demo_vault
 ```
 
 This is intentionally conservative. In a real deployment, the consumer should subscribe to an authoritative projection event stream and then refresh changed entities from Kogwistar before materializing files.
+
+For a one-shot full refresh, use `build-from-export` instead. That mode materializes the entire vault from a snapshot export in one pass.
+
+The streaming path keeps an inbox log at `System/inbox.jsonl` and a materialized state file at `System/materialized_state.json`, so incremental runs can resume cleanly after a full rebuild.
+
+### Dump and stream example
+
+1. Start with a full dump:
+   ```bash
+   kogwistar-obsidian-sink build-from-export --input examples/sample_graph_export.json --vault ./demo_vault
+   ```
+2. Then stream new changes:
+   ```bash
+   kogwistar-obsidian-sink consume-events --events examples/sample_events.jsonl --vault ./demo_vault
+   ```
+3. Re-run the stream command as new events arrive. The inbox/state files let the sink apply only impacted note changes instead of redumping everything.
 
 ## Tutorial
 
@@ -173,7 +225,7 @@ This is intentionally conservative. In a real deployment, the consumer should su
 1. Install this repo.
 2. Build the demo vault:
    ```bash
-   kogwistar-obsidian-sink build-demo --sample examples/sample_graph_export.json --vault ./demo_vault
+   kogwistar-obsidian-sink build-from-export --input examples/sample_graph_export.json --vault ./demo_vault
    ```
 3. Open Obsidian.
 4. Choose **Open folder as vault**.
@@ -189,7 +241,7 @@ This is intentionally conservative. In a real deployment, the consumer should su
    ```
 9. Rebuild from source again:
    ```bash
-   kogwistar-obsidian-sink build-demo --sample examples/sample_graph_export.json --vault ./demo_vault
+   kogwistar-obsidian-sink build-from-export --input examples/sample_graph_export.json --vault ./demo_vault
    ```
 10. Confirm that generated sections remain deterministic while user notes are preserved only if you later wire in a merge policy.
 

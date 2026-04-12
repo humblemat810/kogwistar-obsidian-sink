@@ -44,6 +44,8 @@ class ProjectionRecord:
     kg_id: str
     file_path: str
     projection_kind: str
+    canvas_path: str | None = None
+    title: str | None = None
     last_projected_version: int | None = None
     last_applied_event_seq: int | None = None
     sync_mode: str = "one_way"

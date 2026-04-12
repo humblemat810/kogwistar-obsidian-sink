@@ -33,6 +33,8 @@ class ObsidianVaultSink:
         self.system_dir = self.vault_root / "System"
         self.views_dir = self.vault_root / "Views"
         self.ledger_path = self.system_dir / "ledger.json"
+        self.state_path = self.system_dir / "materialized_state.json"
+        self.inbox_path = self.system_dir / "inbox.jsonl"
 
     def build(self, provider: ProjectionProvider) -> dict[str, int]:
         snapshot = provider.snapshot()
@@ -59,7 +61,9 @@ class ObsidianVaultSink:
             write_atomic(path, render_result["text"])
             record = ProjectionRecord(
                 kg_id=entity.kg_id,
-                file_path=str(path.relative_to(self.vault_root)),
+                file_path=path.relative_to(self.vault_root).as_posix(),
+                canvas_path=(self.views_dir / f"{self._safe_title(entity.title)}.canvas").relative_to(self.vault_root).as_posix(),
+                title=entity.title,
                 projection_kind="note",
                 last_projected_version=snapshot.version,
                 last_applied_event_seq=snapshot.event_seq,
@@ -86,7 +90,106 @@ class ObsidianVaultSink:
             ),
         )
         dump_json(self.ledger_path, ledger)
+        self._write_materialized_state(snapshot.version, snapshot.event_seq, entities)
         return {"notes": written, "canvases": canvases, "dangling_links": dangling_links}
+
+    def sync(
+        self,
+        provider: ProjectionProvider,
+        *,
+        changed_ids: set[str] | None = None,
+        deleted_ids: set[str] | None = None,
+        affected_titles: set[str] | None = None,
+    ) -> dict[str, int]:
+        snapshot = provider.snapshot()
+        ledger = load_json(self.ledger_path, {"records": {}, "by_id": {}})
+        entities = list(snapshot.entities)
+        path_by_id = self._allocate_paths(entities, ledger)
+        title_by_id = {entity.kg_id: entity.title for entity in entities}
+        title_counts = Counter(entity.title for entity in entities)
+        changed_ids = set(changed_ids or set())
+        deleted_ids = set(deleted_ids or set())
+        affected_titles = set(affected_titles or set())
+        impacted_ids = self._compute_impacted_ids(
+            entities,
+            changed_ids=changed_ids,
+            deleted_ids=deleted_ids,
+            affected_titles=affected_titles,
+        )
+
+        deleted_notes = 0
+        deleted_canvases = 0
+        for entity_id in deleted_ids:
+            record = ledger["records"].pop(ledger["by_id"].pop(entity_id, ""), None)
+            if not record:
+                continue
+            note_path = self.vault_root / Path(record["file_path"])
+            if note_path.exists():
+                note_path.unlink()
+            canvas_rel = record.get("canvas_path")
+            if canvas_rel:
+                canvas_path = self.vault_root / Path(canvas_rel)
+                if canvas_path.exists():
+                    canvas_path.unlink()
+                    deleted_canvases += 1
+            deleted_notes += 1
+
+        written = 0
+        canvases = 0
+        dangling_links = 0
+        for entity in entities:
+            if entity.kg_id not in impacted_ids:
+                continue
+            path = path_by_id[entity.kg_id]
+            render_result = self._render_note(
+                entity,
+                snapshot.event_seq,
+                snapshot.version,
+                path_by_id=path_by_id,
+                title_by_id=title_by_id,
+                title_counts=title_counts,
+            )
+            dangling_links += render_result["dangling_links"]
+            if self._write_if_changed(path, render_result["text"]):
+                written += 1
+            canvas_path = self.views_dir / f"{self._safe_title(entity.title)}.canvas"
+            if self._write_if_changed(canvas_path, self._render_canvas(entity, provider)):
+                canvases += 1
+            record = ProjectionRecord(
+                kg_id=entity.kg_id,
+                file_path=path.relative_to(self.vault_root).as_posix(),
+                projection_kind="note",
+                canvas_path=canvas_path.relative_to(self.vault_root).as_posix(),
+                title=entity.title,
+                last_projected_version=snapshot.version,
+                last_applied_event_seq=snapshot.event_seq,
+                sync_mode="streaming_incremental",
+            )
+            ledger["records"][record.file_path] = asdict(record)
+            ledger["by_id"][entity.kg_id] = record.file_path
+
+        index_path = self.system_dir / "index.md"
+        self._write_if_changed(
+            index_path,
+            self._render_index(
+                entities,
+                snapshot.version,
+                snapshot.event_seq,
+                path_by_id=path_by_id,
+                title_counts=title_counts,
+            ),
+        )
+        dump_json(self.ledger_path, ledger)
+        self._write_materialized_state(snapshot.version, snapshot.event_seq, entities)
+        return {
+            "notes": len(entities),
+            "canvases": len(entities),
+            "updated_notes": written,
+            "updated_canvases": canvases,
+            "deleted_notes": deleted_notes,
+            "deleted_canvases": deleted_canvases,
+            "dangling_links": dangling_links,
+        }
 
     def _allocate_paths(self, entities: list[ProjectionEntity], ledger: dict) -> dict[str, Path]:
         existing_by_id = dict(ledger.get("by_id", {}))
@@ -149,6 +252,65 @@ class ObsidianVaultSink:
     @staticmethod
     def _short_id(value: str) -> str:
         return hashlib.sha1(value.encode("utf-8")).hexdigest()[:8]
+
+    def _write_materialized_state(self, version: int | None, event_seq: int | None, entities: list[ProjectionEntity]) -> None:
+        payload = {
+            "version": version,
+            "event_seq": event_seq,
+            "entities": [asdict(entity) for entity in entities],
+        }
+        dump_json(self.state_path, payload)
+
+    def _compute_impacted_ids(
+        self,
+        entities: list[ProjectionEntity],
+        *,
+        changed_ids: set[str],
+        deleted_ids: set[str],
+        affected_titles: set[str],
+    ) -> set[str]:
+        title_to_ids: dict[str, set[str]] = defaultdict(set)
+        for entity in entities:
+            title_to_ids[entity.title].add(entity.kg_id)
+
+        impacted: set[str] = set(changed_ids) | set(deleted_ids)
+        for title in affected_titles:
+            impacted.update(title_to_ids.get(title, set()))
+
+        seed_ids = set(impacted)
+        for entity in entities:
+            refs = self._entity_reference_ids(entity)
+            if refs.intersection(seed_ids):
+                impacted.add(entity.kg_id)
+        return impacted
+
+    @staticmethod
+    def _entity_reference_ids(entity: ProjectionEntity) -> set[str]:
+        refs: set[str] = set(entity.source_ids)
+        refs.update(entity.target_ids)
+        for ref in entity.metadata.get("heading_refs", []) or []:
+            if isinstance(ref, dict):
+                target_id = str(ref.get("target_id") or ref.get("id") or ref.get("kg_id") or "")
+                if target_id:
+                    refs.add(target_id)
+        for ref in entity.metadata.get("block_refs", []) or []:
+            if isinstance(ref, dict):
+                target_id = str(ref.get("target_id") or ref.get("id") or ref.get("kg_id") or "")
+                if target_id:
+                    refs.add(target_id)
+        for relationship in entity.relationships:
+            if relationship.source_id:
+                refs.add(relationship.source_id)
+            if relationship.target_id:
+                refs.add(relationship.target_id)
+        return refs
+
+    @staticmethod
+    def _write_if_changed(path: Path, text: str) -> bool:
+        if path.exists() and path.read_text(encoding="utf-8") == text:
+            return False
+        write_atomic(path, text)
+        return True
 
     def _render_note(
         self,

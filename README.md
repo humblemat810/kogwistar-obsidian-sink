@@ -63,6 +63,20 @@ python -m venv .venv
 pip install -e .
 ```
 
+For consumer installs, this resolves `kogwistar` from GitHub through the package metadata in `pyproject.toml`.
+That is the normal default path.
+
+If you want to work against the checked-out local `./kogwistar` subtree (for AI visibility) instead, run the opt-in bootstrap script after installing the repo:
+
+```bash
+bash scripts/bootstrap-dev.sh
+```
+
+The bootstrap script is manual on purpose. It only switches the active environment to the local subtree when you run it.
+If `./kogwistar` is missing, the script clones it first and then installs it editable.
+
+Windows users can run the same Bash script from Git Bash or WSL.
+
 ### 3. Run the end-to-end in-memory demo
 
 ```bash

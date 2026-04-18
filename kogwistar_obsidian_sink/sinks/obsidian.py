@@ -637,11 +637,11 @@ class ObsidianVaultSink:
         display = None if label == Path(path).name else label
         return f"- attachment -> {ObsidianVaultSink._format_wikilink(path, display)}"
 
-    @staticmethod
-    def _wiki_target(path: Path, title: str, title_counts: Counter[str]) -> str:
+    def _wiki_target(self, path: Path, title: str, title_counts: Counter[str]) -> str:
+        rel_path = path.relative_to(self.vault_root)
         if title_counts.get(title, 0) <= 1:
             return title
-        return path.with_suffix("").as_posix()
+        return rel_path.with_suffix("").as_posix()
 
     @staticmethod
     def _fallback_link_target(target_id: str) -> str:

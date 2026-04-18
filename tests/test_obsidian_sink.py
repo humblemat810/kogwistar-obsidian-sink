@@ -185,6 +185,21 @@ def test_duplicate_titles_are_disambiguated_safely():
         assert suffix.exists()
 
 
+def test_index_links_remain_vault_relative_for_duplicate_titles():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        first = ProjectionEntity(kg_id="node:concept:dup-a", title="Duplicate Note", entity_type="concept")
+        second = ProjectionEntity(kg_id="node:concept:dup-b", title="Duplicate Note", entity_type="concept")
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(StubProvider([first, second]))
+
+        index = (vault_root / "System" / "index.md").read_text(encoding="utf-8")
+        assert "C:\\" not in index
+        assert "file://" not in index
+        assert "[[Concepts/Duplicate Note" in index or "[[Notes/Duplicate Note" in index
+
+
 def test_filename_sanitization_is_consistent():
     repo_root = Path(__file__).resolve().parents[1]
     with TemporaryDirectory(dir=repo_root) as tmp_dir:

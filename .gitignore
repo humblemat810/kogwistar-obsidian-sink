@@ -4,3 +4,10 @@
 demo_vault
 .pytest_tmp
 tmp_smoke_demo_vault
+dist
+build
+*.egg-info
+*.whl
+*.tar.gz
+release_build
+.tmp

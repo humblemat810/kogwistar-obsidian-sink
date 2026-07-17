@@ -32,6 +32,6 @@ if [ ! -f "$KOGWISTAR_DIR/pyproject.toml" ]; then
 fi
 
 echo "Installing local kogwistar subtree editable into the active environment..."
-python -m pip install -e "$KOGWISTAR_DIR"
+python -m pip install -e "$KOGWISTAR_DIR" --no-deps
 
 echo "Bootstrap complete."

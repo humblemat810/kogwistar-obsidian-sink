@@ -108,6 +108,38 @@ def test_build_is_stable_for_existing_id():
         assert not (vault_root / "Concepts" / "Hypergraph RAG Renamed.md").exists()
 
 
+def test_rust_entity_projection_adapter_preserves_entity_checkpoint_and_type():
+    provider = KogwistarDuckProvider.from_entity_projection(
+        {
+            "version": 1,
+            "last_seq": 7,
+            "entities": {
+                '["node","alpha"]': {
+                    "deleted": True,
+                    "entity_kind": "node",
+                    "entity_id": "alpha",
+                    "seq": 7,
+                },
+                '["node","beta"]': {
+                    "deleted": False,
+                    "entity_kind": "node",
+                    "entity_id": "beta",
+                    "seq": 5,
+                    "entity": {"id": "beta", "label": "Beta", "type": "concept"},
+                },
+            },
+        }
+    )
+
+    snapshot = provider.snapshot()
+    assert snapshot.event_seq == 7
+    assert len(snapshot.entities) == 1
+    assert snapshot.entities[0].kg_id == "beta"
+    assert snapshot.entities[0].entity_type == "concept"
+    assert snapshot.entities[0].event_seq == 5
+    assert snapshot.entities[0].version == 5
+
+
 def test_heading_and_block_refs_and_attachments_are_rendered():
     repo_root = Path(__file__).resolve().parents[1]
     with TemporaryDirectory(dir=repo_root) as tmp_dir:

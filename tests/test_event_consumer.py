@@ -120,7 +120,7 @@ def test_event_consumer_streaming_updates_only_impacted_files(monkeypatch):
         assert stats["canvases"] == 2
         assert len(written_paths) < 10
         assert any(path.endswith("Concepts/Beta.md") for path in written_paths)
-        assert any(path.endswith("Concepts/Alpha.md") for path in written_paths)
+        assert not any(path.endswith("Concepts/Alpha.md") for path in written_paths)
         assert any(path.endswith("System/index.md") for path in written_paths)
         assert any(path.endswith("System/ledger.json") for path in utility_write_paths)
         assert any(path.endswith("System/materialized_state.json") for path in utility_write_paths)

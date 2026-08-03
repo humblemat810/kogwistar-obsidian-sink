@@ -63,7 +63,11 @@ class JsonlEventConsumer:
                     affected_titles.add(previous_title)
                 new_title = str(entity.get("label") or entity.get("title") or entity_id)
                 affected_titles.add(new_title)
-                entities_by_id[entity_id] = self._normalize_state_entity(entity)
+                entities_by_id[entity_id] = self._normalize_state_entity(
+                    entity,
+                    version=event.get("version"),
+                    event_seq=event_seq,
+                )
                 changed_ids.add(entity_id)
             elif event_type in {"entity.delete", "entity.remove", "entity.tombstone"}:
                 previous = entities_by_id.pop(entity_id, None)
@@ -91,7 +95,12 @@ class JsonlEventConsumer:
             handle.write(json.dumps(event, ensure_ascii=False) + "\n")
 
     @staticmethod
-    def _normalize_state_entity(entity: dict) -> dict:
+    def _normalize_state_entity(
+        entity: dict,
+        *,
+        version: int | None = None,
+        event_seq: int | None = None,
+    ) -> dict:
         payload = dict(entity)
         payload.setdefault("metadata", {})
         payload.setdefault("source_ids", [])
@@ -100,4 +109,6 @@ class JsonlEventConsumer:
         payload.setdefault("mentions", [])
         payload.setdefault("type", payload.get("type") or payload.get("entity_type") or "note")
         payload.setdefault("label", payload.get("label") or payload.get("title") or payload.get("id") or "Untitled")
+        payload["version"] = version
+        payload["event_seq"] = event_seq
         return payload

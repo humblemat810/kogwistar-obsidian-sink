@@ -49,10 +49,12 @@ class ObsidianVaultSink:
 
         for entity in entities:
             path = path_by_id[entity.kg_id]
+            entity_event_seq = entity.event_seq if entity.event_seq is not None else snapshot.event_seq
+            entity_version = entity.version if entity.version is not None else snapshot.version
             render_result = self._render_note(
                 entity,
-                snapshot.event_seq,
-                snapshot.version,
+                entity_event_seq,
+                entity_version,
                 path_by_id=path_by_id,
                 title_by_id=title_by_id,
                 title_counts=title_counts,
@@ -65,8 +67,8 @@ class ObsidianVaultSink:
                 canvas_path=(self.views_dir / f"{self._safe_title(entity.title)}.canvas").relative_to(self.vault_root).as_posix(),
                 title=entity.title,
                 projection_kind="note",
-                last_projected_version=snapshot.version,
-                last_applied_event_seq=snapshot.event_seq,
+                last_projected_version=entity_version,
+                last_applied_event_seq=entity_event_seq,
                 sync_mode="round_trip_safe_notes",
             )
             ledger["records"][record.file_path] = asdict(record)
@@ -141,10 +143,12 @@ class ObsidianVaultSink:
             if entity.kg_id not in impacted_ids:
                 continue
             path = path_by_id[entity.kg_id]
+            entity_event_seq = entity.event_seq if entity.event_seq is not None else snapshot.event_seq
+            entity_version = entity.version if entity.version is not None else snapshot.version
             render_result = self._render_note(
                 entity,
-                snapshot.event_seq,
-                snapshot.version,
+                entity_event_seq,
+                entity_version,
                 path_by_id=path_by_id,
                 title_by_id=title_by_id,
                 title_counts=title_counts,
@@ -161,8 +165,8 @@ class ObsidianVaultSink:
                 projection_kind="note",
                 canvas_path=canvas_path.relative_to(self.vault_root).as_posix(),
                 title=entity.title,
-                last_projected_version=snapshot.version,
-                last_applied_event_seq=snapshot.event_seq,
+                last_projected_version=entity_version,
+                last_applied_event_seq=entity_event_seq,
                 sync_mode="streaming_incremental",
             )
             ledger["records"][record.file_path] = asdict(record)

@@ -27,6 +27,30 @@ class KogwistarDuckProvider(ProjectionProvider):
             event_seq=payload.get("event_seq"),
         )
 
+    @classmethod
+    def from_entity_projection(cls, payload: str | dict[str, Any]) -> "KogwistarDuckProvider":
+        """Adapt canonical Rust entity-event reducer projection."""
+        projection = json.loads(payload) if isinstance(payload, str) else payload
+        if not isinstance(projection, dict):
+            raise TypeError("entity projection must be a JSON object")
+        raw_entities = projection.get("entities", {})
+        if not isinstance(raw_entities, dict):
+            raise ValueError("entity projection entities must be an object")
+        entities: list[dict[str, Any]] = []
+        for row in raw_entities.values():
+            if not isinstance(row, dict) or row.get("deleted") is not False:
+                continue
+            entity = row.get("entity")
+            if not isinstance(entity, dict):
+                continue
+            normalized = dict(entity)
+            normalized.setdefault("event_seq", row.get("seq"))
+            normalized.setdefault("version", normalized.get("event_seq"))
+            entities.append(normalized)
+        entities.sort(key=lambda item: str(item.get("id") or item.get("kg_id") or ""))
+        last_seq = projection.get("last_seq")
+        return cls(entities, version=last_seq, event_seq=last_seq)
+
     def snapshot(self) -> ProviderSnapshot:
         return ProviderSnapshot(
             entities=list(self._entities),
@@ -67,7 +91,12 @@ class KogwistarDuckProvider(ProjectionProvider):
             for r in raw_relationships
         ]
         title = str(item.get("label") or item.get("title") or item.get("id") or "Untitled")
-        entity_type = str(item.get("type") or metadata.get("entity_type") or "note")
+        entity_type = str(
+            item.get("type")
+            or item.get("entity_type")
+            or metadata.get("entity_type")
+            or "note"
+        )
         body = str(metadata.get("body") or item.get("body") or "")
         return ProjectionEntity(
             kg_id=str(item.get("id") or item.get("kg_id") or title),
@@ -81,6 +110,8 @@ class KogwistarDuckProvider(ProjectionProvider):
             relationships=relationships,
             mentions=mentions,
             body=body,
+            version=(None if item.get("version") is None else int(item["version"])),
+            event_seq=(None if item.get("event_seq") is None else int(item["event_seq"])),
         )
 
     def _coerce_mention(self, item: Any) -> MentionSpan:
@@ -123,8 +154,8 @@ class KogwistarDuckProvider(ProjectionProvider):
     @staticmethod
     def _object_to_dict(item: Any) -> dict[str, Any]:
         keys = [
-            "id", "kg_id", "label", "title", "type", "summary", "metadata", "mentions",
-            "source_ids", "target_ids", "relation", "relationships", "body",
+            "id", "kg_id", "label", "title", "type", "entity_type", "summary", "metadata", "mentions",
+            "source_ids", "target_ids", "relation", "relationships", "body", "version", "event_seq",
         ]
         payload = {}
         for key in keys:

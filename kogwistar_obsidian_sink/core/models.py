@@ -37,6 +37,8 @@ class ProjectionEntity:
     relationships: list[SemanticRelationship] = field(default_factory=list)
     mentions: list[MentionSpan] = field(default_factory=list)
     body: str = ""
+    version: int | None = None
+    event_seq: int | None = None
 
 
 @dataclass(slots=True)

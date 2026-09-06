@@ -66,12 +66,13 @@ def test_build_writes_notes_and_ledger():
         assert (vault_root / "Concepts" / "Hypergraph RAG.md").exists()
         assert (vault_root / "System" / "ledger.json").exists()
         assert (vault_root / "System" / "index.md").exists()
-        assert (vault_root / "Views" / "Hypergraph RAG.canvas").exists()
+        canvas_files = list((vault_root / "Views").glob("Hypergraph RAG--*.canvas"))
+        assert len(canvas_files) == 1
 
         ledger = json.loads((vault_root / "System" / "ledger.json").read_text(encoding="utf-8"))
         assert ledger["by_id"]["node:concept:hypergraph-rag"] == "Concepts/Hypergraph RAG.md"
 
-        canvas = json.loads((vault_root / "Views" / "Hypergraph RAG.canvas").read_text(encoding="utf-8"))
+        canvas = json.loads(canvas_files[0].read_text(encoding="utf-8"))
         assert canvas["nodes"][0]["text"] == "Hypergraph RAG"
         assert len(canvas["edges"]) == 2
         assert {node["text"] for node in canvas["nodes"]} == {
@@ -215,6 +216,32 @@ def test_duplicate_titles_are_disambiguated_safely():
 
         assert base.exists()
         assert suffix.exists()
+
+
+def test_duplicate_titles_get_independent_canvases_and_safe_deletion():
+    repo_root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(dir=repo_root) as tmp_dir:
+        vault_root = Path(tmp_dir)
+        first = ProjectionEntity(kg_id="node:concept:dup-a", title="Duplicate Note", entity_type="concept")
+        second = ProjectionEntity(kg_id="node:concept:dup-b", title="Duplicate Note", entity_type="concept")
+        sink = ObsidianVaultSink(vault_root)
+        sink.build(StubProvider([first, second]))
+
+        canvases = list((vault_root / "Views").glob("Duplicate Note--*.canvas"))
+        assert len(canvases) == 2
+        second_canvas = vault_root / "Views" / (
+            "Duplicate Note--"
+            + hashlib.sha256(second.kg_id.encode("utf-8")).hexdigest()[:10]
+            + ".canvas"
+        )
+        second_canvas_text = second_canvas.read_text(encoding="utf-8")
+
+        sink.sync(StubProvider([second]), deleted_ids={first.kg_id})
+
+        remaining = list((vault_root / "Views").glob("Duplicate Note--*.canvas"))
+        assert len(remaining) == 1
+        assert remaining[0] == second_canvas
+        assert remaining[0].read_text(encoding="utf-8") == second_canvas_text
 
 
 def test_index_links_remain_vault_relative_for_duplicate_titles():

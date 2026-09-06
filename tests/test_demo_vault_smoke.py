@@ -43,8 +43,8 @@ def test_build_from_export_smoke_exports_a_real_vault():
 
         assert (vault_path / "System" / "ledger.json").exists()
         assert (vault_path / "System" / "index.md").exists()
-        assert (vault_path / "Views" / "Hypergraph RAG.canvas").exists()
-        assert (vault_path / "Views" / "Progress Log.canvas").exists()
+        assert list((vault_path / "Views").glob("Hypergraph RAG--*.canvas"))
+        assert list((vault_path / "Views").glob("Progress Log--*.canvas"))
 
         ledger = json.loads((vault_path / "System" / "ledger.json").read_text(encoding="utf-8"))
         assert Path(ledger["by_id"]["node:document:progress-log"]).as_posix() == "Documents/Progress Log.md"

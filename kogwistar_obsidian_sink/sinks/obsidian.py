@@ -61,10 +61,11 @@ class ObsidianVaultSink:
             )
             dangling_links += render_result["dangling_links"]
             write_atomic(path, render_result["text"])
+            canvas_path = self._canvas_path(entity)
             record = ProjectionRecord(
                 kg_id=entity.kg_id,
                 file_path=path.relative_to(self.vault_root).as_posix(),
-                canvas_path=(self.views_dir / f"{self._safe_title(entity.title)}.canvas").relative_to(self.vault_root).as_posix(),
+                canvas_path=canvas_path.relative_to(self.vault_root).as_posix(),
                 title=entity.title,
                 projection_kind="note",
                 last_projected_version=entity_version,
@@ -76,7 +77,7 @@ class ObsidianVaultSink:
             written += 1
 
         for entity in entities:
-            canvas_path = self.views_dir / f"{self._safe_title(entity.title)}.canvas"
+            canvas_path = self._canvas_path(entity)
             write_atomic(canvas_path, self._render_canvas(entity, provider))
             canvases += 1
 
@@ -129,7 +130,10 @@ class ObsidianVaultSink:
             if note_path.exists():
                 note_path.unlink()
             canvas_rel = record.get("canvas_path")
-            if canvas_rel:
+            if canvas_rel and not any(
+                other.get("canvas_path") == canvas_rel
+                for other in ledger.get("records", {}).values()
+            ):
                 canvas_path = self.vault_root / Path(canvas_rel)
                 if canvas_path.exists():
                     canvas_path.unlink()
@@ -156,7 +160,8 @@ class ObsidianVaultSink:
             dangling_links += render_result["dangling_links"]
             if self._write_if_changed(path, render_result["text"]):
                 written += 1
-            canvas_path = self.views_dir / f"{self._safe_title(entity.title)}.canvas"
+            canvas_path = self._canvas_path(entity)
+            old_canvas_rel = (ledger.get("records", {}).get(path.relative_to(self.vault_root).as_posix()) or {}).get("canvas_path")
             if self._write_if_changed(canvas_path, self._render_canvas(entity, provider)):
                 canvases += 1
             record = ProjectionRecord(
@@ -171,6 +176,15 @@ class ObsidianVaultSink:
             )
             ledger["records"][record.file_path] = asdict(record)
             ledger["by_id"][entity.kg_id] = record.file_path
+            if old_canvas_rel and old_canvas_rel != record.canvas_path and not any(
+                other.get("canvas_path") == old_canvas_rel
+                for key, other in ledger.get("records", {}).items()
+                if key != record.file_path
+            ):
+                old_canvas = self.vault_root / Path(old_canvas_rel)
+                if old_canvas.exists():
+                    old_canvas.unlink()
+                    deleted_canvases += 1
 
         index_path = self.system_dir / "index.md"
         self._write_if_changed(
@@ -225,6 +239,11 @@ class ObsidianVaultSink:
                 reserved.add(rel_path.as_posix())
 
         return path_by_id
+
+    def _canvas_path(self, entity: ProjectionEntity) -> Path:
+        """Return a stable, title-friendly canvas path that cannot collide."""
+        digest = hashlib.sha256(str(entity.kg_id).encode("utf-8")).hexdigest()[:10]
+        return self.views_dir / f"{self._safe_title(entity.title)}--{digest}.canvas"
 
     def _disambiguated_path(self, folder: str, stem: str, kg_id: str, reserved: set[str]) -> Path:
         suffix = self._short_id(kg_id)

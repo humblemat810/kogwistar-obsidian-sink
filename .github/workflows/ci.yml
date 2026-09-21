@@ -25,16 +25,32 @@ jobs:
         include:
           - label: cpython312
             python-version: "3.12"
+            is_pypy: false
           - label: cpython313
             python-version: "3.13"
+            is_pypy: false
           - label: cpython314
             python-version: "3.14"
+            is_pypy: false
           - label: pypy311
             python-version: pypy-3.11-v7.3.20
+            is_pypy: true
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Check out pinned Kogwistar source for PyPy
+        if: matrix.is_pypy
+        uses: actions/checkout@v7
+        with:
+          repository: humblemat810/kogwistar
+          ref: 05a474474a83e7d8ca1b4720afd6ef6fa190c2a0
+          path: kogwistar
+
+      - name: Set PyPy import path
+        if: matrix.is_pypy
+        run: echo "PYTHONPATH=${{ github.workspace }}/kogwistar" >> "$GITHUB_ENV"
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -42,8 +58,22 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install package and test dependencies
-        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Install CPython package and test dependencies
+        if: matrix.is_pypy == false
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Install PyPy Python-authority dependencies
+        if: matrix.is_pypy
+        env:
+          KOGWISTAR_IMPL_MODE: python
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r kogwistar/requirements-pypy-3.11-experimental.txt
+          python -m pip install --no-deps -e "."
 
       - name: Run tests
+        env:
+          KOGWISTAR_IMPL_MODE: python
         run: python -m pytest -q -p no:cacheprovider

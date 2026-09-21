@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kogwistar-obsidian-sink"
-version = "0.1.0"
+version = "0.1.1"
 description = "Composable Obsidian vault sink for Kogwistar projections"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 authors = [{name = "PChan"}]
 dependencies = [
-    "kogwistar>=0.2.0,<0.3.0",
+    "kogwistar>=0.4.1,<0.5.0",
 ]
 
 [project.optional-dependencies]

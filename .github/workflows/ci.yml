@@ -63,6 +63,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ./kogwistar
           python -m pip install -e ".[dev]" --no-deps
+          python -m pip install "pytest>=8"
 
       - name: Install PyPy Python-authority dependencies
         if: matrix.is_pypy

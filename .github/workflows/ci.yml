@@ -40,8 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Check out pinned Kogwistar source for PyPy
-        if: matrix.is_pypy
+      - name: Check out pinned Kogwistar source
         uses: actions/checkout@v7
         with:
           repository: humblemat810/kogwistar
@@ -62,7 +61,8 @@ jobs:
         if: matrix.is_pypy == false
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ./kogwistar
+          python -m pip install -e ".[dev]" --no-deps
 
       - name: Install PyPy Python-authority dependencies
         if: matrix.is_pypy

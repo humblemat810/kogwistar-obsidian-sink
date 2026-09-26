@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 authors = [{name = "PChan"}]
 dependencies = [
-    "kogwistar>=0.5.0,<0.6.0",
+    "kogwistar @ git+https://github.com/humblemat810/kogwistar.git@ae24e1663a66deb0e65d6e2bf74a2e5ef317e1ea ; python_version >= '3.12'",
 ]
 
 [project.optional-dependencies]

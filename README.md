@@ -63,7 +63,7 @@ python -m venv .venv
 pip install -e .
 ```
 
-For consumer installs, this resolves `kogwistar` from GitHub through the package metadata in `pyproject.toml`.
+For consumer installs on CPython 3.12+, this resolves the released `kogwistar==0.6.2` package from PyPI through the package metadata in `pyproject.toml`.
 That is the normal default path.
 
 If you want to work against the checked-out local `./kogwistar` subtree (for AI visibility) instead, run the opt-in bootstrap script after installing the repo:

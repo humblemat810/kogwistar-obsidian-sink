@@ -41,10 +41,11 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Check out pinned Kogwistar source
+        if: matrix.is_pypy
         uses: actions/checkout@v7
         with:
           repository: humblemat810/kogwistar
-          ref: ae24e1663a66deb0e65d6e2bf74a2e5ef317e1ea
+          ref: v0.6.2
           path: kogwistar
 
       - name: Set PyPy import path
@@ -61,8 +62,7 @@ jobs:
         if: matrix.is_pypy == false
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ./kogwistar
-          python -m pip install -e ".[dev]" --no-deps
+          python -m pip install -e ".[dev]"
           python -m pip install "pytest>=8"
 
       - name: Install PyPy Python-authority dependencies

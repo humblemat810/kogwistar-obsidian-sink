@@ -699,29 +699,34 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "kogwistar"
-version = "0.6.0"
+version = "0.6.4"
 description = "Graph-native substrate for knowledge, conversation, workflow, provenance, replay, and MCP/REST tooling"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 markers = "python_version >= \"3.12\""
-files = []
-develop = false
+files = [
+    {file = "kogwistar-0.6.4-cp312-abi3-macosx_10_12_x86_64.whl", hash = "sha256:06cb6aa4148699130e6a182ca24cd532d3f961791a3ca5c4e2bd3616714f0638"},
+    {file = "kogwistar-0.6.4-cp312-abi3-macosx_11_0_arm64.whl", hash = "sha256:acf7a5dbd6e53cda72cb5c7ddcc7baaed20e34ab2813e55d4158516747e38189"},
+    {file = "kogwistar-0.6.4-cp312-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:c65f8f17c5c31b4a16eab0165cd175d2c49b5f442c55af80bfe0ed161dddded8"},
+    {file = "kogwistar-0.6.4-cp312-abi3-win_amd64.whl", hash = "sha256:dc5e76a7a5621b9192db3ce27254b82b91dac6fc476ce62af6e4d174c9fd9a7e"},
+    {file = "kogwistar-0.6.4.tar.gz", hash = "sha256:3ea43a0ad1b9c41ab0a3e58cd5171a58cdda89bdd887278b95de060463159f10"},
+]
 
 [package.dependencies]
 anyio = ">=4.0"
 diskcache = {version = ">=5.6,<6", markers = "implementation_name == \"pypy\""}
 fastapi = ">=0.111"
 httpx = ">=0.28.1"
-Jinja2 = ">=3.1"
+jinja2 = ">=3.1"
 joblib = {version = ">=1.3", markers = "implementation_name == \"cpython\""}
 mcp = ">=2.2.0,<3"
 pydantic = ">=2.6"
 pydantic-extension = ">=0.0.7"
-PyJWT = ">=2.8"
+pyjwt = ">=2.8"
 python-dotenv = ">=1.0.1"
 python-jose = {version = ">=3.3", extras = ["cryptography"]}
-RapidFuzz = ">=3.13.0"
+rapidfuzz = ">=3.13.0"
 requests = ">=2.32"
 typing-extensions = ">=4.8"
 
@@ -729,7 +734,7 @@ typing-extensions = ">=4.8"
 browser = ["playwright (>=1.45,<2)"]
 build = ["build", "twine"]
 chroma = ["chromadb (>=1.0.15)"]
-full = ["chromadb (>=1.0.15)", "fastapi (>=0.111)", "langchain-core (>=0.3.0)", "langchain-google-genai (>=2.0.0)", "langchain-mcp-adapters (>=0.0.8)", "langchain-ollama (>=0.3.0)", "langchain-openai (>=0.3.0)", "langgraph (>=0.6.5)", "mcp (>=2.2.0,<3)", "pgvector (>=0.3.6)", "psycopg[binary] (>=3.1)", "sqlalchemy (>=2.0)", "uvicorn[standard] (>=0.30)"]
+full = ["chromadb (>=1.0.15)", "fastapi (>=0.111)", "langchain-core (>=0.3.0)", "langchain-google-genai (>=2.0.0)", "langchain-mcp-adapters (>=0.0.8)", "langchain-ollama (>=0.3.0)", "langchain-openai (>=0.3.0)", "langgraph (>=0.6.5)", "mcp (>=2.2.0,<3)", "pgvector (>=0.3.6)", "psycopg[binary] (>=3.1)", "sqlalchemy[asyncio] (>=2.0)", "uvicorn[standard] (>=0.30)"]
 gemini = ["langchain-core (>=0.3.0)", "langchain-google-genai (>=2.0.0)"]
 ingestion-gemini = ["langchain-core (>=0.3.0)", "langchain-google-genai (>=2.0.0)"]
 ingestion-openai = ["langchain-core (>=0.3.0)", "langchain-openai (>=0.3.0)"]
@@ -739,18 +744,12 @@ mcp-adapter = ["langchain-mcp-adapters (>=0.0.8)"]
 ollama = ["langchain-core (>=0.3.0)", "langchain-ollama (>=0.3.0)", "ollama (>=0.5.3)"]
 openai = ["langchain-core (>=0.3.0)", "langchain-openai (>=0.3.0)"]
 otel = ["opentelemetry-api (>=1.24)", "opentelemetry-exporter-otlp (>=1.24)", "opentelemetry-sdk (>=1.24)"]
-pgvector = ["pgvector (>=0.3.6)", "psycopg[binary] (>=3.1)", "sqlalchemy (>=2.0)"]
+pgvector = ["pgvector (>=0.3.6)", "psycopg[binary] (>=3.1)", "sqlalchemy[asyncio] (>=2.0)"]
 rust = ["maturin (>=1.7,<2)"]
 server = ["mcp (>=2.2.0,<3)", "uvicorn[standard] (>=0.30)"]
 test = ["numpy (>=1.26)", "pytest (>=8)", "pytest-asyncio (>=1.1.0)", "pytest-dotenv (>=0.5.2)", "pytest-xdist (>=3.8,<4)", "testcontainers (>=4.0)"]
 typecheck = ["mypy (>=1.8)"]
 viz = ["pygraphviz (>=1.14)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/humblemat810/kogwistar.git"
-reference = "ae24e1663a66deb0e65d6e2bf74a2e5ef317e1ea"
-resolved_reference = "ae24e1663a66deb0e65d6e2bf74a2e5ef317e1ea"
 
 [[package]]
 name = "markupsafe"
@@ -1718,4 +1717,4 @@ dev = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "0a001bf3fd691869ab20b99fe2e10864e2ff5b0a831e95f6e2b8a8c9d8104d13"
+content-hash = "d2121b88894568ffa7d083f098df00259be3abc14b14caeaaaa16f9a7512e7c2"

@@ -4,6 +4,7 @@ import json
 import shutil
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 from kogwistar.engine_core.engine import GraphKnowledgeEngine
 from kogwistar.engine_core.in_memory_backend import build_in_memory_backend
 from kogwistar.engine_core.models import Edge, Grounding, MentionVerification, Node, Span
@@ -37,8 +38,8 @@ class OneDimEmbedding:
         _ = config
         return cls()
 
-    def __call__(self, texts):
-        return [[1.0] for _ in texts]
+    def __call__(self, documents_or_texts: list[str]) -> list[list[float]]:
+        return [[1.0] for _ in documents_or_texts]
 
 
 def _span(doc_id: str, excerpt: str, *, insertion_method: str) -> Span:
@@ -83,10 +84,10 @@ def _make_node(
     level_from_root: int,
     body: str = "",
     aliases: list[str] | None = None,
-    heading_refs: list[dict[str, object]] | None = None,
-    block_refs: list[dict[str, object]] | None = None,
+    heading_refs: list[dict[str, Any]] | None = None,
+    block_refs: list[dict[str, Any]] | None = None,
 ) -> Node:
-    metadata: dict[str, object] = {
+    metadata: dict[str, Any] = {
         "entity_type": entity_type,
         "aliases": aliases or [],
         "body": body,

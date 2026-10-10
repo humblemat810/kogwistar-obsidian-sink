@@ -4,15 +4,21 @@ import hashlib
 import json
 import logging
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import asdict
 from pathlib import Path
-from typing import Iterable
+from typing import TypedDict
 
 from ..core.models import ProjectionEntity, ProjectionRecord, SemanticRelationship
 from ..core.provider import ProjectionProvider
 from ..core.utils import dump_json, load_json, slugify, write_atomic
 
 LOGGER = logging.getLogger(__name__)
+
+
+class RenderNoteResult(TypedDict):
+    text: str
+    dangling_links: int
 
 
 ENTITY_DIRS = {
@@ -344,7 +350,7 @@ class ObsidianVaultSink:
         path_by_id: dict[str, Path],
         title_by_id: dict[str, str],
         title_counts: Counter[str],
-    ) -> dict[str, object]:
+    ) -> RenderNoteResult:
         tags = entity.metadata.get("tags", []) or []
         aliases = entity.metadata.get("aliases", []) or []
         attachments = entity.metadata.get("attachments", []) or []

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TypeAlias
+
+
+JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
 
 
 @dataclass(slots=True)
@@ -21,7 +24,7 @@ class SemanticRelationship:
     source_id: str = ""
     target_id: str = ""
     relation_type: str = "related"
-    properties: dict[str, Any] = field(default_factory=dict)
+    properties: dict[str, JsonValue] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -30,7 +33,7 @@ class ProjectionEntity:
     title: str
     entity_type: str = "note"
     summary: str = ""
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, JsonValue] = field(default_factory=dict)
     source_ids: list[str] = field(default_factory=list)
     target_ids: list[str] = field(default_factory=list)
     relation: str | None = None

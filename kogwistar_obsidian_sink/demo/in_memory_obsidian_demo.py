@@ -4,8 +4,6 @@ import json
 import shutil
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
-
 from kogwistar.engine_core.engine import GraphKnowledgeEngine
 from kogwistar.engine_core.in_memory_backend import build_in_memory_backend
 from kogwistar.engine_core.models import Edge, Grounding, MentionVerification, Node, Span
@@ -85,10 +83,10 @@ def _make_node(
     level_from_root: int,
     body: str = "",
     aliases: list[str] | None = None,
-    heading_refs: list[dict[str, Any]] | None = None,
-    block_refs: list[dict[str, Any]] | None = None,
+    heading_refs: list[dict[str, object]] | None = None,
+    block_refs: list[dict[str, object]] | None = None,
 ) -> Node:
-    metadata: dict[str, Any] = {
+    metadata: dict[str, object] = {
         "entity_type": entity_type,
         "aliases": aliases or [],
         "body": body,
@@ -280,9 +278,9 @@ def _engine_to_provider(
     nodes = engine.read.get_nodes(limit=10_000, resolve_mode="active_only")
     edges = engine.read.get_edges(limit=10_000, resolve_mode="active_only")
 
-    node_payloads: dict[str, dict[str, Any]] = {}
+    node_payloads: dict[str, dict[str, object]] = {}
     outgoing_targets: dict[str, set[str]] = defaultdict(set)
-    relationships_by_source: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    relationships_by_source: dict[str, list[dict[str, object]]] = defaultdict(list)
 
     for node in nodes:
         payload = node.model_dump(field_mode="backend", exclude={"embedding"})
@@ -331,7 +329,7 @@ def _engine_to_provider(
     )
 
 
-def run_end_to_end_demo(vault_root: str | Path) -> dict[str, Any]:
+def run_end_to_end_demo(vault_root: str | Path) -> dict[str, object]:
     vault_root = Path(vault_root)
     shutil.rmtree(vault_root, ignore_errors=True)
     vault_root.mkdir(parents=True, exist_ok=True)

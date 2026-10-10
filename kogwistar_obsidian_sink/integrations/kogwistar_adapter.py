@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from collections.abc import Iterable, Mapping
 
 from ..core.models import MentionSpan, ProjectionEntity, SemanticRelationship
 from ..core.provider import ProjectionProvider, ProviderSnapshot
@@ -12,7 +12,7 @@ from ..core.provider import ProjectionProvider, ProviderSnapshot
 class KogwistarDuckProvider(ProjectionProvider):
     """Adapt dicts or Kogwistar-like objects using stable, low-assumption duck typing."""
 
-    def __init__(self, entities: Iterable[Any], *, version: int | None = None, event_seq: int | None = None):
+    def __init__(self, entities: Iterable[object], *, version: int | None = None, event_seq: int | None = None):
         self._raw_entities = list(entities)
         self._version = version
         self._event_seq = event_seq
@@ -28,7 +28,7 @@ class KogwistarDuckProvider(ProjectionProvider):
         )
 
     @classmethod
-    def from_entity_projection(cls, payload: str | dict[str, Any]) -> "KogwistarDuckProvider":
+    def from_entity_projection(cls, payload: str | dict[str, object]) -> "KogwistarDuckProvider":
         """Adapt canonical Rust entity-event reducer projection."""
         projection = json.loads(payload) if isinstance(payload, str) else payload
         if not isinstance(projection, dict):
@@ -36,7 +36,7 @@ class KogwistarDuckProvider(ProjectionProvider):
         raw_entities = projection.get("entities", {})
         if not isinstance(raw_entities, dict):
             raise ValueError("entity projection entities must be an object")
-        entities: list[dict[str, Any]] = []
+        entities: list[dict[str, object]] = []
         for row in raw_entities.values():
             if not isinstance(row, dict) or row.get("deleted") is not False:
                 continue
@@ -73,7 +73,7 @@ class KogwistarDuckProvider(ProjectionProvider):
                 related.append(relationship.target_id)
         return related
 
-    def _coerce_entity(self, item: Any) -> ProjectionEntity:
+    def _coerce_entity(self, item: object) -> ProjectionEntity:
         if isinstance(item, ProjectionEntity):
             return item
         if is_dataclass(item):
@@ -114,7 +114,7 @@ class KogwistarDuckProvider(ProjectionProvider):
             event_seq=(None if item.get("event_seq") is None else int(item["event_seq"])),
         )
 
-    def _coerce_mention(self, item: Any) -> MentionSpan:
+    def _coerce_mention(self, item: object) -> MentionSpan:
         if is_dataclass(item):
             item = asdict(item)
         elif hasattr(item, "model_dump"):
@@ -135,7 +135,7 @@ class KogwistarDuckProvider(ProjectionProvider):
             context_after=str(item.get("context_after") or ""),
         )
 
-    def _coerce_relationship(self, item: Any, *, default_source_id: str = "") -> SemanticRelationship:
+    def _coerce_relationship(self, item: object, *, default_source_id: str = "") -> SemanticRelationship:
         if is_dataclass(item):
             item = asdict(item)
         elif hasattr(item, "model_dump"):
@@ -152,12 +152,12 @@ class KogwistarDuckProvider(ProjectionProvider):
         )
 
     @staticmethod
-    def _object_to_dict(item: Any) -> dict[str, Any]:
+    def _object_to_dict(item: object) -> dict[str, object]:
         keys = [
             "id", "kg_id", "label", "title", "type", "entity_type", "summary", "metadata", "mentions",
             "source_ids", "target_ids", "relation", "relationships", "body", "version", "event_seq",
         ]
-        payload = {}
+        payload: dict[str, object] = {}
         for key in keys:
             if hasattr(item, key):
                 payload[key] = getattr(item, key)

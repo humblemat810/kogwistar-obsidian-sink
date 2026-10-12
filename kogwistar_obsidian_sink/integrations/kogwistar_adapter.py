@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any, cast
 
 from ..core.models import MentionSpan, ProjectionEntity, SemanticRelationship
 from ..core.provider import ProjectionProvider, ProviderSnapshot
@@ -77,7 +78,7 @@ class KogwistarDuckProvider(ProjectionProvider):
         if isinstance(item, ProjectionEntity):
             return item
         if is_dataclass(item):
-            item = asdict(item)
+            item = asdict(cast(Any, item))
         if hasattr(item, "model_dump"):
             item = item.model_dump()
         if not isinstance(item, dict):
@@ -116,7 +117,7 @@ class KogwistarDuckProvider(ProjectionProvider):
 
     def _coerce_mention(self, item: Any) -> MentionSpan:
         if is_dataclass(item):
-            item = asdict(item)
+            item = asdict(cast(Any, item))
         elif hasattr(item, "model_dump"):
             item = item.model_dump()
         elif not isinstance(item, dict):
@@ -137,7 +138,7 @@ class KogwistarDuckProvider(ProjectionProvider):
 
     def _coerce_relationship(self, item: Any, *, default_source_id: str = "") -> SemanticRelationship:
         if is_dataclass(item):
-            item = asdict(item)
+            item = asdict(cast(Any, item))
         elif hasattr(item, "model_dump"):
             item = item.model_dump()
         elif not isinstance(item, dict):
@@ -157,7 +158,7 @@ class KogwistarDuckProvider(ProjectionProvider):
             "id", "kg_id", "label", "title", "type", "entity_type", "summary", "metadata", "mentions",
             "source_ids", "target_ids", "relation", "relationships", "body", "version", "event_seq",
         ]
-        payload = {}
+        payload: dict[str, Any] = {}
         for key in keys:
             if hasattr(item, key):
                 payload[key] = getattr(item, key)

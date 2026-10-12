@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 
 from .demo.in_memory_obsidian_demo import run_end_to_end_demo
 from .cdc.event_consumer import JsonlEventConsumer

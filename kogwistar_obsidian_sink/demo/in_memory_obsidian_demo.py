@@ -5,7 +5,6 @@ import shutil
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
-
 from kogwistar.engine_core.engine import GraphKnowledgeEngine
 from kogwistar.engine_core.in_memory_backend import build_in_memory_backend
 from kogwistar.engine_core.models import Edge, Grounding, MentionVerification, Node, Span
@@ -39,8 +38,8 @@ class OneDimEmbedding:
         _ = config
         return cls()
 
-    def __call__(self, texts):
-        return [[1.0] for _ in texts]
+    def __call__(self, documents_or_texts: list[str]) -> list[list[float]]:
+        return [[1.0] for _ in documents_or_texts]
 
 
 def _span(doc_id: str, excerpt: str, *, insertion_method: str) -> Span:
@@ -280,9 +279,9 @@ def _engine_to_provider(
     nodes = engine.read.get_nodes(limit=10_000, resolve_mode="active_only")
     edges = engine.read.get_edges(limit=10_000, resolve_mode="active_only")
 
-    node_payloads: dict[str, dict[str, Any]] = {}
+    node_payloads: dict[str, dict[str, object]] = {}
     outgoing_targets: dict[str, set[str]] = defaultdict(set)
-    relationships_by_source: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    relationships_by_source: dict[str, list[dict[str, object]]] = defaultdict(list)
 
     for node in nodes:
         payload = node.model_dump(field_mode="backend", exclude={"embedding"})
@@ -331,7 +330,7 @@ def _engine_to_provider(
     )
 
 
-def run_end_to_end_demo(vault_root: str | Path) -> dict[str, Any]:
+def run_end_to_end_demo(vault_root: str | Path) -> dict[str, object]:
     vault_root = Path(vault_root)
     shutil.rmtree(vault_root, ignore_errors=True)
     vault_root.mkdir(parents=True, exist_ok=True)

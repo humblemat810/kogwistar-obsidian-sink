@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from typing import Any, cast
 
 from ..core.models import MentionSpan, ProjectionEntity, SemanticRelationship

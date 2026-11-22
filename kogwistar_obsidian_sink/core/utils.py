@@ -18,7 +18,7 @@ def ensure_parent(path: Path) -> None:
 def write_atomic(path: Path, text: str) -> None:
     ensure_parent(path)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(text, encoding="utf-8")
+    tmp.write_text(text, encoding="utf-8", newline="\n")
     tmp.replace(path)
 
 

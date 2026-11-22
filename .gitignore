@@ -12,5 +12,6 @@ build
 *.tar.gz
 release_build
 .tmp
+.tmp_sink_pytest/
 rust/target/
 /rust/rust/

@@ -196,6 +196,30 @@ fn format_wikilink(target: &str, display: Option<&str>) -> String {
     format!("[[{target}]]")
 }
 
+fn python_string_array(values: &[String]) -> String {
+    let encoded = values
+        .iter()
+        .map(|value| serde_json::to_string(value).unwrap())
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!("[{encoded}]")
+}
+
+fn python_repr_list(values: &[String]) -> String {
+    let encoded = values
+        .iter()
+        .map(|value| {
+            if value.contains('\'') && !value.contains('"') {
+                serde_json::to_string(value).unwrap()
+            } else {
+                format!("'{}'", value)
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!("[{encoded}]")
+}
+
 fn fallback_link_target(target_id: &str) -> String {
     format!("Notes/{}", safe_title(target_id))
 }
@@ -347,7 +371,15 @@ pub fn render_note(
                 .get("tags")
                 .cloned()
                 .unwrap_or(Value::Array(Vec::new()))
-                .to_string()
+                .as_array()
+                .map(|values| python_string_array(
+                    &values
+                        .iter()
+                        .filter_map(Value::as_str)
+                        .map(str::to_string)
+                        .collect::<Vec<_>>()
+                ))
+                .unwrap_or_else(|| "[]".to_string())
         ),
         format!(
             "aliases: {}",
@@ -519,12 +551,12 @@ pub fn render_note(
         .collect::<Vec<_>>();
     lines.push(format!(
         "relation_handles: {}",
-        serde_json::to_string(&relation_handles).unwrap()
+        python_repr_list(&relation_handles)
     ));
     lines.push("editable_sections:".to_string());
     lines.push("  - User Notes".to_string());
     lines.push("```".to_string());
-    (lines.join("\n"), dangling)
+    (format!("{}\n", lines.join("\n")), dangling)
 }
 
 pub fn render_canvas(entity: &ProjectionEntity, snapshot: &ProviderSnapshot) -> String {

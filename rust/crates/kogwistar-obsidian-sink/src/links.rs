@@ -21,16 +21,52 @@ pub fn slugify(value: &str) -> String {
 }
 
 pub fn strip_frontmatter(text: &str) -> String {
-    if let Some(rest) = text.strip_prefix("---\n") {
-        if let Some(end) = rest.find("\n---\n") {
-            return rest[end + 5..].trim_start_matches('\n').to_string();
+    let Some(rest) = text.strip_prefix("---\n") else {
+        return text.to_string();
+    };
+    let Some(end) = rest.find("\n---\n") else {
+        return text.to_string();
+    };
+    rest[end + 5..].trim_start_matches('\n').to_string()
+}
+
+fn unquote(raw: &str) -> String {
+    let bytes = raw.as_bytes();
+    let mut decoded = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        let hex_byte = if bytes[index] == b'%'
+            && index + 2 < bytes.len()
+            && bytes[index + 1..index + 3]
+                .iter()
+                .all(u8::is_ascii_hexdigit)
+        {
+            Some(
+                u8::from_str_radix(
+                    std::str::from_utf8(&bytes[index + 1..index + 3]).expect("hex"),
+                    16,
+                )
+                .expect("valid hex"),
+            )
+        } else {
+            None
+        };
+        match hex_byte {
+            Some(byte) => {
+                decoded.push(byte);
+                index += 3;
+            }
+            None => {
+                decoded.push(bytes[index]);
+                index += 1;
+            }
         }
     }
-    text.to_string()
+    String::from_utf8_lossy(&decoded).into_owned()
 }
 
 pub fn normalize_target(raw: &str) -> String {
-    let mut target = raw.trim().to_string();
+    let mut target = unquote(raw.trim());
     if let Some(pipe_index) = target.find('|') {
         target.truncate(pipe_index);
     }
@@ -99,6 +135,30 @@ mod tests {
     fn ignores_frontmatter_aliases() {
         assert!(
             extract_internal_link_targets("---\naliases: [\"B\"]\n---\n\nNo links.\n").is_empty()
+        );
+    }
+
+    #[test]
+    fn decodes_markdown_destinations() {
+        assert_eq!(
+            extract_internal_link_targets("[Example](My%20Note.md)"),
+            vec!["My Note".to_string()]
+        );
+    }
+
+    #[test]
+    fn ignores_external_links_and_embedded_images() {
+        assert!(extract_internal_link_targets(
+            "![Alt](image.png) [Web](https://example.com) [Mail](mailto:test@example.com)"
+        )
+        .is_empty());
+    }
+
+    #[test]
+    fn normalizes_fragments() {
+        assert_eq!(
+            extract_internal_link_targets("[Example](B# A%20B)"),
+            vec!["B#A B".to_string()]
         );
     }
 }

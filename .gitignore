@@ -11,3 +11,4 @@ build
 *.tar.gz
 release_build
 .tmp
+rust/target/

@@ -12,8 +12,8 @@
 | User-owned block | Preserve `USER-OWNED-START`/`USER-OWNED-END` semantics and editable-section policy | DONE | Round-trip edit test |
 | Canvas rendering | Mirror `_render_canvas`; related IDs, deterministic node geometry and edge IDs | DONE | Canvas fixture pending |
 | Internal link extraction | Mirror `core/links.py`; strip frontmatter, wikilinks, markdown links, URL decoding, fragments and aliases | DONE | Link extraction tests |
-| Ledger persistence | Mirror `ProjectionRecord`; path map, by-ID map, projection kind, version, event sequence and sync mode | TODO | Ledger fixture |
-| Materialized state | Mirror `_write_materialized_state`; entity dump plus snapshot version and event sequence | TODO | State fixture |
+| Ledger persistence | Mirror `ProjectionRecord`; path map, by-ID map, projection kind, version, event sequence and sync mode | DONE | Ledger fixture |
+| Materialized state | Mirror `_write_materialized_state`; entity dump plus snapshot version and event sequence | DONE | State fixture |
 | Event consumer | Mirror `cdc/event_consumer.py`; line filtering, sequence bounds, upsert/delete, inbox append, replay protection | TODO | Event stream fixture |
 | Safe round-trip parser | Mirror `roundtrip/safe_notes.py`; extract `kg_id` and user-owned notes block | TODO | Parser unit test |
 | In-memory demo | Mirror `demo/in_memory_obsidian_demo.py` end-to-end projection | TODO | Demo smoke test |

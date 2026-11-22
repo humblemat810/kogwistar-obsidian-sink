@@ -917,4 +917,56 @@ mod tests {
         assert_eq!(stats["updated_notes"].as_u64().unwrap(), 3);
         fs::remove_dir_all(&root).unwrap();
     }
+
+    #[test]
+    fn persists_records_and_materialized_state() {
+        let root =
+            std::env::temp_dir().join(format!("kogwistar-sink-ledger-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        build(&root, &sample()).unwrap();
+        let ledger_value: Value =
+            serde_json::from_str(&fs::read_to_string(root.join("System/ledger.json")).unwrap())
+                .unwrap();
+        let record = ledger_value
+            .pointer("/records/Concepts~1Hypergraph RAG.md")
+            .expect("record exists");
+        assert_eq!(record["projection_kind"], "note");
+        assert_eq!(record["sync_mode"], "round_trip_safe_notes");
+        assert_eq!(record["last_projected_version"], 42);
+        assert_eq!(record["last_applied_event_seq"], 98122);
+
+        let mut snapshot = sample();
+        snapshot.entities[0].title = "Renamed".to_string();
+        let options = SyncOptions {
+            changed_ids: ["node:concept:hypergraph-rag".to_string()]
+                .into_iter()
+                .collect(),
+            ..Default::default()
+        };
+        sync(&root, &snapshot, &options).unwrap();
+        let ledger_value: Value =
+            serde_json::from_str(&fs::read_to_string(root.join("System/ledger.json")).unwrap())
+                .unwrap();
+        let renamed_path = ledger_value
+            .pointer("/by_id/node:concept:hypergraph-rag")
+            .and_then(Value::as_str)
+            .expect("renamed path exists");
+        let renamed_pointer = renamed_path.replace('~', "~0").replace('/', "~1");
+        assert_eq!(
+            ledger_value
+                .pointer(&format!("/records/{renamed_pointer}/sync_mode"))
+                .and_then(Value::as_str),
+            Some("streaming_incremental")
+        );
+
+        let state: Value = serde_json::from_str(
+            &fs::read_to_string(root.join("System/materialized_state.json")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(state["version"], 42);
+        assert_eq!(state["event_seq"], 98122);
+        assert_eq!(state["entities"].as_array().map(Vec::len), Some(3));
+        assert_eq!(state["entities"][0]["kg_id"], "node:concept:hypergraph-rag");
+        fs::remove_dir_all(&root).unwrap();
+    }
 }

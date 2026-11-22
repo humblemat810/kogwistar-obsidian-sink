@@ -15,6 +15,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Lint
+        working-directory: rust
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test
+        working-directory: rust
+        run: cargo test
+
   tests:
     name: Tests (${{ matrix.label }})
     runs-on: ubuntu-latest

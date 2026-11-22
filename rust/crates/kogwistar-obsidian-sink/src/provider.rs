@@ -3,7 +3,7 @@ use serde_json::{Map, Value};
 use sha1::{Digest, Sha1};
 use std::path::Path;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ProjectionEntity {
     pub kg_id: String,
     pub title: String,
@@ -20,7 +20,7 @@ pub struct ProjectionEntity {
     pub event_seq: Option<u64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct MentionSpan {
     pub doc_id: String,
     pub page_number: u64,
@@ -32,7 +32,7 @@ pub struct MentionSpan {
     pub context_after: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct SemanticRelationship {
     pub source_id: String,
     pub target_id: String,

@@ -6,6 +6,6 @@
 | Cargo workspace | DONE | `cargo test` |
 | Export/projection adapters | DONE | Unit tests |
 | Note and canvas rendering | DONE | Round-trip test |
-| Ledger and event consumer | TODO | Cross-language parity |
-| Python golden-file parity | TODO | Fixture suite |
-| CI workflow | TODO | fmt, clippy, test |
+| Ledger and event consumer | DONE | Cross-language parity |
+| Python golden-file parity | DONE | Fixture suite |
+| CI workflow | DONE | fmt, clippy, test |

@@ -17,12 +17,8 @@ fn normalize_entity(
     version: Option<u64>,
 ) -> ProjectionEntity {
     let mut entity = crate::provider::projection_entity(value);
-    if entity.event_seq.is_none() {
-        entity.event_seq = event_seq;
-    }
-    if entity.version.is_none() {
-        entity.version = version.or(entity.event_seq);
-    }
+    entity.event_seq = event_seq;
+    entity.version = version;
     entity
 }
 
@@ -73,6 +69,7 @@ pub fn consume_events(
         let entity_id = entity_value
             .get("id")
             .or_else(|| entity_value.get("kg_id"))
+            .or_else(|| entity_value.get("label"))
             .and_then(Value::as_str)
             .unwrap_or_default()
             .to_string();
@@ -102,8 +99,8 @@ pub fn consume_events(
         if event_seq.is_some() {
             last_event_seq = event_seq;
         }
-        if let Some(version) = event.get("version").and_then(Value::as_u64) {
-            last_version = Some(version);
+        if let Some(version) = event.get("version") {
+            last_version = version.as_u64();
         }
     }
     let mut entities: Vec<ProjectionEntity> = entities_by_id.into_values().collect();
@@ -153,6 +150,58 @@ mod tests {
         .unwrap();
         assert!(root.join("Concepts/Event Sourcing.md").exists());
         assert!(root.join("System/inbox.jsonl").exists());
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn respects_sequence_bounds() {
+        let root =
+            std::env::temp_dir().join(format!("kogwistar-event-bounds-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let events_path =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../examples/sample_events.jsonl");
+        let stats = consume_events(
+            &root,
+            &events_path,
+            &EventOptions {
+                from_seq: Some(1002),
+                to_seq: None,
+            },
+        )
+        .unwrap();
+        assert_eq!(stats["notes"].as_u64(), Some(1));
+        assert!(!root.join("Concepts/Event Sourcing.md").exists());
+        assert!(root.join("Projects/Obsidian Sink.md").exists());
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn rejects_replayed_events() {
+        let root =
+            std::env::temp_dir().join(format!("kogwistar-event-replay-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let events_path =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../examples/sample_events.jsonl");
+        let first = consume_events(
+            &root,
+            &events_path,
+            &EventOptions {
+                from_seq: None,
+                to_seq: None,
+            },
+        )
+        .unwrap();
+        assert_eq!(first["updated_notes"].as_u64(), Some(2));
+        let second = consume_events(
+            &root,
+            &events_path,
+            &EventOptions {
+                from_seq: None,
+                to_seq: None,
+            },
+        )
+        .unwrap();
+        assert_eq!(second["updated_notes"].as_u64(), Some(0));
         fs::remove_dir_all(&root).unwrap();
     }
 }

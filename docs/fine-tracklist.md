@@ -15,7 +15,7 @@
 | Ledger persistence | Mirror `ProjectionRecord`; path map, by-ID map, projection kind, version, event sequence and sync mode | DONE | Ledger fixture |
 | Materialized state | Mirror `_write_materialized_state`; entity dump plus snapshot version and event sequence | DONE | State fixture |
 | Event consumer | Mirror `cdc/event_consumer.py`; line filtering, sequence bounds, upsert/delete, inbox append, replay protection | DONE | Event stream fixture |
-| Safe round-trip parser | Mirror `roundtrip/safe_notes.py`; extract `kg_id` and user-owned notes block | TODO | Parser unit test |
+| Safe round-trip parser | Mirror `roundtrip/safe_notes.py`; extract `kg_id` and user-owned notes block | DONE | Parser unit test |
 | In-memory demo | Mirror `demo/in_memory_obsidian_demo.py` end-to-end projection | TODO | Demo smoke test |
 | Multimodal grounding | Preserve multimodal mentions without requiring text spans | TODO | Multimodal grounding test |
 | Python parity | Golden graph exports and event streams against Python-generated notes, canvases, ledger and state | TODO | Cross-language fixture suite |

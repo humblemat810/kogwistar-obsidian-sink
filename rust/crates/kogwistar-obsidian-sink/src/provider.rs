@@ -322,4 +322,28 @@ mod tests {
     fn short_id_is_stable() {
         assert_eq!(short_id("node:concept:alpha").len(), 8);
     }
+
+    #[test]
+    fn preserves_multimodal_mentions_without_text_spans() {
+        let value = serde_json::json!({
+            "id": "node:image:diagram",
+            "label": "Diagram",
+            "type": "document",
+            "mentions": [{
+                "spans": [{
+                    "doc_id": "doc:image:1",
+                    "page_number": 2,
+                    "excerpt": ""
+                }]
+            }]
+        });
+        let entity = projection_entity(&value);
+        assert_eq!(entity.mentions.len(), 1);
+        let mention = &entity.mentions[0];
+        assert_eq!(mention.doc_id, "doc:image:1");
+        assert_eq!(mention.page_number, 2);
+        assert_eq!(mention.start_char, 0);
+        assert_eq!(mention.end_char, 0);
+        assert_eq!(mention.excerpt, "");
+    }
 }

@@ -19,4 +19,4 @@
 | In-memory demo | Mirror `demo/in_memory_obsidian_demo.py` end-to-end projection | DONE | Demo smoke test |
 | Multimodal grounding | Preserve multimodal mentions without requiring text spans | DONE | Multimodal grounding test |
 | Python parity | Golden graph exports and event streams against Python-generated notes, canvases, ledger and state | DONE | Cross-language fixture suite |
-| CI | Add fmt, clippy, test and cross-language parity workflow | TODO | Workflow green |
+| CI | Add fmt, clippy, test and cross-language parity workflow | DONE | Workflow green |

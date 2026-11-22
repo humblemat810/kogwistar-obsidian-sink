@@ -4,6 +4,7 @@
 demo_vault
 .pytest_tmp
 tmp_smoke_demo_vault
+tmp_in_memory_demo_vault*
 dist
 build
 *.egg-info
@@ -12,3 +13,4 @@ build
 release_build
 .tmp
 rust/target/
+/rust/rust/

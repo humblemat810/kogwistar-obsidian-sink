@@ -3,7 +3,7 @@ use serde_json::{Map, Value};
 use sha1::{Digest, Sha1};
 use std::path::Path;
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct ProjectionEntity {
     pub kg_id: String,
     pub title: String,
@@ -20,7 +20,7 @@ pub struct ProjectionEntity {
     pub event_seq: Option<u64>,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct MentionSpan {
     pub doc_id: String,
     pub page_number: u64,
@@ -32,7 +32,7 @@ pub struct MentionSpan {
     pub context_after: String,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SemanticRelationship {
     pub source_id: String,
     pub target_id: String,
@@ -40,7 +40,7 @@ pub struct SemanticRelationship {
     pub properties: Map<String, Value>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ProviderSnapshot {
     pub entities: Vec<ProjectionEntity>,
     pub version: Option<u64>,
@@ -113,7 +113,7 @@ fn relationship(value: &Value, default_source_id: &str) -> SemanticRelationship 
     }
 }
 
-fn projection_entity(value: &Value) -> ProjectionEntity {
+pub fn projection_entity(value: &Value) -> ProjectionEntity {
     let metadata = object(value.get("metadata"));
     let raw_relationships = value
         .get("relationships")

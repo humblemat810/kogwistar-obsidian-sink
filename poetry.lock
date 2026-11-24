@@ -79,7 +79,7 @@ description = "Foreign Function Interface for Python calling C code."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and platform_python_implementation != \"PyPy\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\" and platform_python_implementation != \"PyPy\""
 files = [
     {file = "cffi-2.0.0-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:0cf2d91ecc3fcc0625c2c530fe004f82c110405f101548512cce44322fa8ac44"},
     {file = "cffi-2.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f73b96c41e3b2adedc34a7356e64c8eb96e03a3782b535e043a986276ce12a49"},
@@ -317,7 +317,7 @@ description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and sys_platform != \"emscripten\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\" and sys_platform != \"emscripten\") and python_version >= \"3.12\" and sys_platform != \"emscripten\""
 files = [
     {file = "click-8.3.2-py3-none-any.whl", hash = "sha256:1924d2c27c5653561cd2cae4548d1406039cb79b858b747cfea24924bbc1616d"},
     {file = "click-8.3.2.tar.gz", hash = "sha256:14162b8b3b3550a7d479eafa77dfd3c38d9dc8951f6f69c78913a8f9a7540fd5"},
@@ -333,7 +333,7 @@ description = "Cross-platform colored terminal text."
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and platform_system == \"Windows\" and sys_platform != \"emscripten\" or extra == \"dev\" and sys_platform == \"win32\""
+markers = "(implementation_name != \"pypy\" or extra == \"dev\" or sys_platform != \"win32\" and sys_platform != \"emscripten\") and sys_platform != \"emscripten\" and (python_version >= \"3.12\" or extra == \"dev\") and (python_version >= \"3.12\" or sys_platform == \"win32\") and (platform_system == \"Windows\" or extra == \"dev\") and (platform_system == \"Windows\" or sys_platform == \"win32\")"
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -346,7 +346,7 @@ description = "cryptography is a package which provides cryptographic recipes an
 optional = false
 python-versions = "!=3.9.0,!=3.9.1,>=3.8"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\""
 files = [
     {file = "cryptography-46.0.7-cp311-abi3-macosx_10_9_universal2.whl", hash = "sha256:ea42cbe97209df307fdc3b155f1b6fa2577c0defa8f1f7d3be7d31d189108ad4"},
     {file = "cryptography-46.0.7-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:b36a4695e29fe69215d75960b22577197aca3f7a25b9cf9d165dcfe9d80bc325"},
@@ -419,7 +419,7 @@ description = "Disk Cache -- Disk and file backed persistent cache."
 optional = false
 python-versions = ">=3"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and implementation_name == \"pypy\""
+markers = "implementation_name == \"pypy\" and python_version >= \"3.12\""
 files = [
     {file = "diskcache-5.6.3-py3-none-any.whl", hash = "sha256:5e31b2d5fbad117cc363ebaf6b689474db18a1f6438bc82358b024abd4c2ca19"},
     {file = "diskcache-5.6.3.tar.gz", hash = "sha256:2c3a3fa2743d8535d832ec61c2054a1641f41775aa7c556758a109941e33e4fc"},
@@ -513,7 +513,7 @@ description = "A minimal low-level HTTP client."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and sys_platform != \"emscripten\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\" and sys_platform != \"emscripten\""
 files = [
     {file = "httpcore2-2.13.1-py3-none-any.whl", hash = "sha256:e1e05d4f25f7d7d496bfb96748f6f4b67657b03da069b3a68c36069f3db73d0a"},
     {file = "httpcore2-2.13.1.tar.gz", hash = "sha256:e0aa977abe17e69a3b820a24542a6fa88702676d83880b8d194dcd18408e5103"},
@@ -562,7 +562,7 @@ description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\""
 files = [
     {file = "httpx2-2.13.1-py3-none-any.whl", hash = "sha256:6dff50fabc270ee5fd25d845d0b078ed20564579744d6d962850975996d2f9a4"},
     {file = "httpx2-2.13.1.tar.gz", hash = "sha256:e48744a19e3af5ee48313d0ce5fe941d5422fae5705ea922a4aabf94d7800dfa"},
@@ -652,7 +652,7 @@ description = "Lightweight pipelining with Python functions"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and implementation_name == \"cpython\""
+markers = "implementation_name == \"cpython\" and python_version >= \"3.12\""
 files = [
     {file = "joblib-1.5.3-py3-none-any.whl", hash = "sha256:5fc3c5039fc5ca8c0276333a188bbd59d6b7ab37fe6632daa76bc7f9ec18e713"},
     {file = "joblib-1.5.3.tar.gz", hash = "sha256:8561a3269e6801106863fd0d6d84bb737be9e7631e33aaed3fb9ce5953688da3"},
@@ -699,18 +699,19 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "kogwistar"
-version = "0.6.4"
+version = "0.7.0"
 description = "Graph-native substrate for knowledge, conversation, workflow, provenance, replay, and MCP/REST tooling"
 optional = false
-python-versions = ">=3.12"
+python-versions = ">=3.11"
 groups = ["main"]
 markers = "python_version >= \"3.12\""
 files = [
-    {file = "kogwistar-0.6.4-cp312-abi3-macosx_10_12_x86_64.whl", hash = "sha256:06cb6aa4148699130e6a182ca24cd532d3f961791a3ca5c4e2bd3616714f0638"},
-    {file = "kogwistar-0.6.4-cp312-abi3-macosx_11_0_arm64.whl", hash = "sha256:acf7a5dbd6e53cda72cb5c7ddcc7baaed20e34ab2813e55d4158516747e38189"},
-    {file = "kogwistar-0.6.4-cp312-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:c65f8f17c5c31b4a16eab0165cd175d2c49b5f442c55af80bfe0ed161dddded8"},
-    {file = "kogwistar-0.6.4-cp312-abi3-win_amd64.whl", hash = "sha256:dc5e76a7a5621b9192db3ce27254b82b91dac6fc476ce62af6e4d174c9fd9a7e"},
-    {file = "kogwistar-0.6.4.tar.gz", hash = "sha256:3ea43a0ad1b9c41ab0a3e58cd5171a58cdda89bdd887278b95de060463159f10"},
+    {file = "kogwistar-0.7.0-cp312-abi3-macosx_10_12_x86_64.whl", hash = "sha256:759ba1e335a56fcd8f153ec5f8ed246677fdbe7108dfd2501c1ee5d360a45a4a"},
+    {file = "kogwistar-0.7.0-cp312-abi3-macosx_11_0_arm64.whl", hash = "sha256:951f77ff428bf056fb5befef2798058e11eff5883cd572c850390be57e0178bb"},
+    {file = "kogwistar-0.7.0-cp312-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:7582b020da59678f2436c408ea51942c737af59e74456930680b2b5cc88ef874"},
+    {file = "kogwistar-0.7.0-cp312-abi3-win_amd64.whl", hash = "sha256:167c29390e501a682270b54373c9e9725e1d0a583bd11b09618352627996fec6"},
+    {file = "kogwistar-0.7.0-py3-none-any.whl", hash = "sha256:84d0e7f8c63fba17c18bc70d7042fae95a740f6d91ed4885a8ca5c815749db84"},
+    {file = "kogwistar-0.7.0.tar.gz", hash = "sha256:5ae79de7f7937d529799a20772c60c54e8742828ee427239eed67e1b68af012b"},
 ]
 
 [package.dependencies]
@@ -720,17 +721,22 @@ fastapi = ">=0.111"
 httpx = ">=0.28.1"
 jinja2 = ">=3.1"
 joblib = {version = ">=1.3", markers = "implementation_name == \"cpython\""}
-mcp = ">=2.2.0,<3"
+jsonschema = ">=4.21,<5"
+mcp = {version = ">=2.2.0,<3", markers = "implementation_name != \"pypy\" or sys_platform != \"win32\""}
 pydantic = ">=2.6"
-pydantic-extension = ">=0.0.7"
+pydantic-extension = ">=0.0.8"
 pyjwt = ">=2.8"
 python-dotenv = ">=1.0.1"
-python-jose = {version = ">=3.3", extras = ["cryptography"]}
+python-jose = [
+    {version = ">=3.3", extras = ["cryptography"], markers = "implementation_name != \"pypy\" or sys_platform != \"win32\""},
+    {version = ">=3.3", markers = "implementation_name == \"pypy\" and sys_platform == \"win32\""},
+]
 rapidfuzz = ">=3.13.0"
 requests = ">=2.32"
 typing-extensions = ">=4.8"
 
 [package.extras]
+benchmark = ["psutil (>=6)"]
 browser = ["playwright (>=1.45,<2)"]
 build = ["build", "twine"]
 chroma = ["chromadb (>=1.0.15)"]
@@ -747,8 +753,8 @@ otel = ["opentelemetry-api (>=1.24)", "opentelemetry-exporter-otlp (>=1.24)", "o
 pgvector = ["pgvector (>=0.3.6)", "psycopg[binary] (>=3.1)", "sqlalchemy[asyncio] (>=2.0)"]
 rust = ["maturin (>=1.7,<2)"]
 server = ["mcp (>=2.2.0,<3)", "uvicorn[standard] (>=0.30)"]
-test = ["numpy (>=1.26)", "pytest (>=8)", "pytest-asyncio (>=1.1.0)", "pytest-dotenv (>=0.5.2)", "pytest-xdist (>=3.8,<4)", "testcontainers (>=4.0)"]
-typecheck = ["mypy (>=1.8)"]
+test = ["numpy (>=1.26)", "pytest (>=8)", "pytest-asyncio (>=1.1.0)", "pytest-dotenv (>=0.5.2)", "pytest-timeout (>=2.3)", "pytest-xdist (>=3.8,<4)", "testcontainers (>=4.0)"]
+typecheck = ["mypy (>=1.8)", "pyright (==1.1.411)"]
 viz = ["pygraphviz (>=1.14)"]
 
 [[package]]
@@ -858,7 +864,7 @@ description = "Model Context Protocol SDK"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\""
 files = [
     {file = "mcp-2.2.0-py3-none-any.whl", hash = "sha256:bde982589473a060ae145e3406e9a5333fe538c97229ba841f5a7f92be004f81"},
     {file = "mcp-2.2.0.tar.gz", hash = "sha256:2dc37ecb1974becdcebdbf7561e7c15a07dbbf20ba21ba16c3593b3038b3afbd"},
@@ -897,7 +903,7 @@ description = "Model Context Protocol wire types"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\""
 files = [
     {file = "mcp_types-2.2.0-py3-none-any.whl", hash = "sha256:ea476b73ee86709ab5abc9452385ed36cc05907e582355622e294595c9a04f13"},
     {file = "mcp_types-2.2.0.tar.gz", hash = "sha256:d3ed53703ddd10d9c6399f29d322bb66f3f67ab41348ac8556ba23e07fedefad"},
@@ -914,7 +920,7 @@ description = "OpenTelemetry Python API"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\""
 files = [
     {file = "opentelemetry_api-1.45.0-py3-none-any.whl", hash = "sha256:80e068aba7cd56c8b58512d6a36f8d25cb1dfaa0c0a4cc1c938ccf9f362d9cb3"},
     {file = "opentelemetry_api-1.45.0.tar.gz", hash = "sha256:711ede81773c8025c2c03dac0450bc89f3d30aea6eabcc815c570d4e35a963f7"},
@@ -973,7 +979,7 @@ description = "C parser in Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and platform_python_implementation != \"PyPy\" and implementation_name != \"PyPy\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\" and platform_python_implementation != \"PyPy\" and implementation_name != \"PyPy\""
 files = [
     {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
     {file = "pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29"},
@@ -1138,15 +1144,15 @@ typing-extensions = ">=4.14.1"
 
 [[package]]
 name = "pydantic-extension"
-version = "0.0.7"
+version = "0.0.8"
 description = "Handy pydantic extension for advanced slicing and FASTAPI, LLM context awareness"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.11"
 groups = ["main"]
 markers = "python_version >= \"3.12\""
 files = [
-    {file = "pydantic_extension-0.0.7-py3-none-any.whl", hash = "sha256:bdecac7e08cc9d740ac937cfc77621ab1c74e265aa55ff80ad3e8d108468af74"},
-    {file = "pydantic_extension-0.0.7.tar.gz", hash = "sha256:d22068580f4924d916537929bb8aff0a20e49daf3dd495e2ffdb141f8f696ecf"},
+    {file = "pydantic_extension-0.0.8-py3-none-any.whl", hash = "sha256:35bbca32cf36be8283cf92fd4a812158131e16f5d418f93b28348156301d7e98"},
+    {file = "pydantic_extension-0.0.8.tar.gz", hash = "sha256:31b15f0389c7072ce6cdc8d2f18097c6d59a9b4b07d8b9359d61bb8d74816712"},
 ]
 
 [[package]]
@@ -1258,7 +1264,7 @@ description = "A streaming multipart parser for Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\""
 files = [
     {file = "python_multipart-0.0.26-py3-none-any.whl", hash = "sha256:c0b169f8c4484c13b0dcf2ef0ec3a4adb255c4b7d18d8e420477d2b1dd03f185"},
     {file = "python_multipart-0.0.26.tar.gz", hash = "sha256:08fadc45918cd615e26846437f50c5d6d23304da32c341f289a617127b081f17"},
@@ -1271,7 +1277,7 @@ description = "Python for Window Extensions"
 optional = false
 python-versions = "*"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and sys_platform == \"win32\""
+markers = "implementation_name != \"pypy\" and python_version >= \"3.12\" and sys_platform == \"win32\""
 files = [
     {file = "pywin32-311-cp310-cp310-win32.whl", hash = "sha256:d03ff496d2a0cd4a5893504789d4a15399133fe82517455e78bad62efbb7f0a3"},
     {file = "pywin32-311-cp310-cp310-win_amd64.whl", hash = "sha256:797c2772017851984b97180b0bebe4b620bb86328e8a884bb626156295a63b3b"},
@@ -1594,7 +1600,7 @@ description = "SSE plugin for Starlette"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\""
 files = [
     {file = "sse_starlette-3.3.4-py3-none-any.whl", hash = "sha256:84bb06e58939a8b38d8341f1bc9792f06c2b53f48c608dd207582b664fc8f3c1"},
     {file = "sse_starlette-3.3.4.tar.gz", hash = "sha256:aaf92fc067af8a5427192895ac028e947b484ac01edbc3caf00e7e7137c7bef1"},
@@ -1637,7 +1643,7 @@ description = "Verify certificates using native system trust stores"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and sys_platform != \"emscripten\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\" and sys_platform != \"emscripten\") and python_version >= \"3.12\" and sys_platform != \"emscripten\""
 files = [
     {file = "truststore-0.10.4-py3-none-any.whl", hash = "sha256:adaeaecf1cbb5f4de3b1959b42d41f6fab57b2b1666adb59e89cb0b53361d981"},
     {file = "truststore-0.10.4.tar.gz", hash = "sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301"},
@@ -1698,7 +1704,7 @@ description = "The lightning-fast ASGI server."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version >= \"3.12\" and sys_platform != \"emscripten\""
+markers = "(implementation_name != \"pypy\" or sys_platform != \"win32\") and python_version >= \"3.12\" and sys_platform != \"emscripten\""
 files = [
     {file = "uvicorn-0.44.0-py3-none-any.whl", hash = "sha256:ce937c99a2cc70279556967274414c087888e8cec9f9c94644dfca11bd3ced89"},
     {file = "uvicorn-0.44.0.tar.gz", hash = "sha256:6c942071b68f07e178264b9152f1f16dfac5da85880c4ce06366a96d70d4f31e"},
@@ -1717,4 +1723,4 @@ dev = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "d2121b88894568ffa7d083f098df00259be3abc14b14caeaaaa16f9a7512e7c2"
+content-hash = "286202d6b864fb23ce408b260235d64ae5b73c7e627e69fb89f289e115078988"

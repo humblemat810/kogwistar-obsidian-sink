@@ -1,0 +1,22 @@
+[package]
+name = "kogwistar-obsidian-sink"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Native Rust Obsidian vault sink for Kogwistar projections"
+
+[dependencies]
+anyhow.workspace = true
+regex.workspace = true
+serde.workspace = true
+serde_json = { workspace = true, features = ["preserve_order"] }
+sha1.workspace = true
+sha2.workspace = true
+
+[lib]
+name = "kogwistar_obsidian_sink"
+
+[[bin]]
+name = "kogwistar-obsidian-sink"
+path = "src/bin/cli.rs"

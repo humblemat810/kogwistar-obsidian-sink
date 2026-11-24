@@ -15,6 +15,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Lint
+        working-directory: rust
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test
+        working-directory: rust
+        run: cargo test
+
   tests:
     name: Tests (${{ matrix.label }})
     runs-on: ubuntu-latest
@@ -78,3 +99,24 @@ jobs:
         env:
           KOGWISTAR_IMPL_MODE: python
         run: python -m pytest -q -p no:cacheprovider
+
+  parity:
+    name: Rust Python Parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pytest
+      - name: Test Rust
+        working-directory: rust
+        run: cargo test
+      - name: Test cross-language parity
+        run: python -m pytest tests/test_cross_language_parity.py -q -p no:cacheprovider
